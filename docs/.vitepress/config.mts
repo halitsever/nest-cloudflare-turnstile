@@ -15,7 +15,8 @@ export default defineConfig({
       {
         text: 'Guide',
         items: [
-          { text: 'Get Started', link: '/get-started' }]
+          { text: 'Get Started', link: '/get-started' },
+          { text: "Options", link: '/turnstile-options' }]
       }
     ],
 
