@@ -7,7 +7,10 @@
   "license": "MIT",
   "main": "dist/main.js",
   "scripts": {
-    "build": "npx tsc"
+    "build": "npx tsc",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.3",
@@ -39,7 +42,8 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "vitepress": "^1.3.4"
   },
   "jest": {
     "moduleFileExtensions": [

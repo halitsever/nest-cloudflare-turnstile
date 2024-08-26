@@ -10,7 +10,7 @@
 <img src="https://img.shields.io/github/sponsors/halitsever"/>
 </p>
 <p align="center">
-<a align="center" href="#">Documentation</a>
+<a align="center" href="https://halitsever.github.io/nest-cloudflare-turnstile">Documentation</a>
   </p>
 </p>
 
@@ -52,7 +52,7 @@ use `TurnstileGuard` guard on controller:
   }
 ```
 
-And thats it! For more information, please check the <a href="#notavailableyet">docs</a>
+And thats it! For more information, please check the <a href="https://halitsever.github.io/nest-cloudflare-turnstile">docs</a>
 
 <p align="center" href="https://github.com/halitsever/repo_name/issues">
 <img src="https://halitsever-api.vercel.app/api/issue"/>
