@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Cloudflare Turnstile NestJS",
   description: "🔥 Cloudflare Turnstile integration for Nest JS",
+  base: "/nest-cloudflare-turnstile/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
