@@ -7,7 +7,7 @@ import { TurnstileGuard } from './guards/turnstile.guard'
 @Module({
 })
 export class TurnstileModule {
-  static forRoot(options: ITurnstileOptions): DynamicModule {
+  public static forRoot(options: ITurnstileOptions): DynamicModule {
 
     const TurnstileModuleOptionsProvider =
     {
@@ -22,7 +22,4 @@ export class TurnstileModule {
       exports: [TurnstileModuleOptionsProvider, TurnstileService, TurnstileGuard]
     }
   }
-
-
-
 }
