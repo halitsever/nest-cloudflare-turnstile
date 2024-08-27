@@ -18,7 +18,7 @@
 <img src="https://halitsever-api.vercel.app/api/details"/>
 </p>
 
-- 🧑‍💻 [**TODO**](#) - update docs
+- 🧩 [**Simple and easy**](#) - This library provides just one guard to protect your endpoints with Cloudflare Turnstile Captcha!
 
 <p align="center" >
 <img src="https://halitsever-api.vercel.app/api/installation"/>
@@ -41,12 +41,14 @@ add module to imports array:
 
 ```
 
-use `TurnstileGuard` guard on controller:
+use `TurnstileCaptcha` decorator on controller:
 
 ```javascript
 
+  import { TurnstileCaptcha } from 'nest-cloudflare-turnstile'
+
   @Post()
-  @UseGuards(TurnstileGuard)
+  @TurnstileCaptcha()
   getHello(): string {
     return this.appService.getHello();
   }
