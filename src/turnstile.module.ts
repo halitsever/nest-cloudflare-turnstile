@@ -1,25 +1,31 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { TurnstileService } from './services/turnstile.service';
 import { HttpModule } from '@nestjs/axios';
-import { ITurnstileOptions } from './interfaces/turnstile'
-import { TurnstileGuard } from './guards/turnstile.guard'
+import { ITurnstileOptions } from './interfaces/turnstile';
+import { TurnstileGuard } from './guards/turnstile.guard';
 
-@Module({
-})
+@Global()
+@Module({})
 export class TurnstileModule {
   public static forRoot(options: ITurnstileOptions): DynamicModule {
-
-    const TurnstileModuleOptionsProvider =
-    {
+    const TurnstileModuleOptionsProvider = {
       provide: 'TurnstileServiceOptions',
-      useValue: options
+      useValue: options,
     };
 
     return {
-      providers: [TurnstileModuleOptionsProvider, TurnstileService, TurnstileGuard],
       module: TurnstileModule,
       imports: [HttpModule],
-      exports: [TurnstileModuleOptionsProvider, TurnstileService, TurnstileGuard]
-    }
+      providers: [
+        TurnstileGuard,
+        TurnstileModuleOptionsProvider,
+        TurnstileService,
+      ],
+      exports: [
+        TurnstileGuard,
+        TurnstileModuleOptionsProvider,
+        TurnstileService,
+      ],
+    };
   }
 }
