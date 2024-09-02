@@ -18,9 +18,10 @@ add module to imports array:
 use `TurnstileGuard` guard on controller:
 
 ```javascript
+  import { TurnstileCaptcha } from 'nest-cloudflare-turnstile'
 
   @Post()
-  @UseGuards(TurnstileGuard)
+  @TurnstileCaptcha()
   getHello(): string {
     return this.appService.getHello();
   }

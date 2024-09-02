@@ -4,7 +4,7 @@
 <img src="https://halitsever-api.vercel.app/api/repo-title?title=Cloudflare%20Turnstile%20NestJS">
 
 <p align="center">
-🔥 Cloudflare Turnstile integration for Nest JS<br>
+☁️ Cloudflare Turnstile integration for NestJS<br>
 <br/>
 <br/>
 <img src="https://img.shields.io/github/sponsors/halitsever"/>
