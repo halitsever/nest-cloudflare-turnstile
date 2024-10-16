@@ -2,6 +2,10 @@
 
 ## v0.0.12
 
+[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.12...v0.0.12)
+
+## v0.0.12
+
 [compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.11...v0.0.12)
 
 ## v0.0.11
