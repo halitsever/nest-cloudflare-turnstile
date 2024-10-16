@@ -1,12 +1,16 @@
 # Changelog
 
-## v0.0.12
+## v0.0.13
 
-[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.12...v0.0.12)
+[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.12...v0.0.13)
 
-## v0.0.12
+### 🏡 Chore
 
-[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.11...v0.0.12)
+- **release:** V0.0.12 ([810fc5f](https://github.com/halitsever/nest-cloudflare-turnstile/commit/810fc5f))
+
+### ❤️ Contributors
+
+- Halit Sever ([@halitsever](http://github.com/halitsever))
 
 ## v0.0.11
 
