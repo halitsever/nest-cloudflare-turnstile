@@ -13,7 +13,7 @@
     "docs:preview": "vitepress preview docs",
     "prepare": "husky",
     "test": "",
-    "release": "changelogen --release"
+    "release": "changelogen --release --bump"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.3",
