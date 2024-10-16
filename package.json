@@ -1,6 +1,6 @@
 {
   "name": "nest-cloudflare-turnstile",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "🔥 Cloudflare Turnstile integration for Nest JS",
   "author": "Halit Sever <halitsever@protonmail.com>",
   "private": false,
@@ -13,7 +13,7 @@
     "docs:preview": "vitepress preview docs",
     "prepare": "husky",
     "test": "",
-    "release": "changelogen --release"
+    "release": "changelogen --release --bump"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.3",
