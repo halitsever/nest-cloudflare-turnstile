@@ -57,7 +57,14 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # GitHub
 .github
 
+# source files
+src
+
 # dev tools
 .eslintrc.js
 .husky
 .prettierrc
+tsconfig*.json
+
+# test files
+test
