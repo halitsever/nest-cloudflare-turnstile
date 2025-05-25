@@ -17,12 +17,19 @@ export class TurnstileGuard implements CanActivate {
     private readonly options: ITurnstileOptions,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    /**
+     * Skip Cloudflare Turnstile validation if `skipIf` is true.
+     * Useful for local development or testing environments where Turnstile is not needed.
+     */
+    const skipValidation = this.options?.skipIf === true;
+    if (skipValidation) return true;
+
     const request = context.switchToHttp().getRequest();
     const responseToken = this.options.tokenResponse(request);
     if (!responseToken) throw new BadRequestException(Messages.MISSING);
     const { success } =
       await this.turnstileService.validateToken(responseToken);
     if (!success) throw new BadRequestException(Messages.INVALID);
-    else return success;
+    return success;
   }
 }

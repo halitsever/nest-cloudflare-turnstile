@@ -10,6 +10,7 @@ export interface ITurnstileOptions {
   secretKey: string;
   tokenResponse: (req) => string;
   onError?: (error) => void;
+  skipIf?: boolean;
 }
 
 export interface IAsyncTurnstileOptions {
