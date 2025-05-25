@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.0.15
+
+[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.12...v0.0.15)
+
+### 🚀 Enhancements
+
+- **turnstile.guard:** Add skipIf option #2 ([#2](https://github.com/halitsever/nest-cloudflare-turnstile/issues/2))
+
+### 🏡 Chore
+
+- Bump nestjs to 11.1.1 #14 ([#14](https://github.com/halitsever/nest-cloudflare-turnstile/issues/14))
+
+### ❤️ Contributors
+
+- Halit Sever ([@halitsever](https://github.com/halitsever))
+
 ## v0.0.12
 
 [compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.11...v0.0.12)
