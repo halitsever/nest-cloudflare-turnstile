@@ -36,7 +36,7 @@ add module to imports array with forRoot method:
 
   imports: [TurnstileModule.forRoot({
     secretKey: '1x0000000000000000000000000000000AA',
-    tokenResponse: (req) => req.body.turnstileToken // or you can use req.headers.turnstileToken
+    tokenResponse: (req) => req.body?.turnstileToken // or you can use req.headers.turnstileToken
   })],
 
 ```
@@ -58,7 +58,7 @@ or with forRootAsync method:
 
         return {
           secretKey,
-          tokenResponse: (req) => req.body.turnstileToken,
+          tokenResponse: (req) => req.body?.turnstileToken,
         };
       },
     }),
@@ -77,6 +77,39 @@ use `TurnstileCaptcha` decorator on controller:
     return this.appService.getHello();
   }
 ```
+
+### skipIf
+
+Use `skipIf` to bypass Turnstile validation conditionally. Useful for development or test environments:
+
+```javascript
+imports: [TurnstileModule.forRoot({
+  secretKey: '1x0000000000000000000000000000000AA',
+  tokenResponse: (req) => req.body?.turnstileToken,
+  skipIf: process.env.NODE_ENV === 'development',
+})],
+```
+
+### exceptionFactory
+
+Use `exceptionFactory` to customize the exception thrown on validation failure. The factory receives `'missing'` or `'invalid'` as the reason:
+
+```javascript
+import { UnauthorizedException } from '@nestjs/common';
+
+imports: [TurnstileModule.forRoot({
+  secretKey: '1x0000000000000000000000000000000AA',
+  tokenResponse: (req) => req.body?.turnstileToken,
+  exceptionFactory: (reason) => {
+    if (reason === 'missing') {
+      return new UnauthorizedException('Turnstile token is required.');
+    }
+    return new UnauthorizedException('Turnstile token is invalid.');
+  },
+})],
+```
+
+Without `exceptionFactory`, the guard throws a `BadRequestException` by default.
 
 And thats it! For more information, please check the <a href="https://halitsever.github.io/nest-cloudflare-turnstile">docs</a>
 
