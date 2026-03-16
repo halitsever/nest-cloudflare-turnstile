@@ -11,6 +11,7 @@ export interface ITurnstileOptions {
   tokenResponse: (req) => string;
   onError?: (error) => void;
   skipIf?: boolean;
+  exceptionFactory?: (reason: 'missing' | 'invalid') => Error;
 }
 
 export interface IAsyncTurnstileOptions {

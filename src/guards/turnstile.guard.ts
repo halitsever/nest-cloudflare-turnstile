@@ -26,10 +26,18 @@ export class TurnstileGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const responseToken = this.options.tokenResponse(request);
-    if (!responseToken) throw new BadRequestException(Messages.MISSING);
+    if (!responseToken) {
+      throw this.options.exceptionFactory
+        ? this.options.exceptionFactory('missing')
+        : new BadRequestException(Messages.MISSING);
+    }
     const { success } =
       await this.turnstileService.validateToken(responseToken);
-    if (!success) throw new BadRequestException(Messages.INVALID);
+    if (!success) {
+      throw this.options.exceptionFactory
+        ? this.options.exceptionFactory('invalid')
+        : new BadRequestException(Messages.INVALID);
+    }
     return success;
   }
 }
