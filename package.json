@@ -1,6 +1,6 @@
 {
   "name": "nest-cloudflare-turnstile",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "🔥 Cloudflare Turnstile integration for Nest JS",
   "author": "Halit Sever <halitsever@protonmail.com>",
   "private": false,
