@@ -8,8 +8,8 @@ import {
 
 export interface ITurnstileOptions {
   secretKey: string;
-  tokenResponse: (req) => string;
-  onError?: (error) => void;
+  tokenResponse: (req: any) => string;
+  onError?: (error: any) => void;
   skipIf?: boolean;
   exceptionFactory?: (reason: 'missing' | 'invalid') => Error;
 }

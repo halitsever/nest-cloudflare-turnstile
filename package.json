@@ -7,12 +7,15 @@
   "license": "MIT",
   "main": "dist/main.js",
   "scripts": {
-    "build": "npx tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "prepare": "husky",
-    "test": "",
+    "prepack": "npm run build",
     "release": "changelogen --release"
   },
   "dependencies": {
@@ -26,7 +29,7 @@
   },
   "devDependencies": {
     "@nestjs/testing": "^11.1.1",
-    "@types/node": "^22.15.21",
+    "@types/node": "^20.19.43",
     "@types/supertest": "^6.0.3",
     "changelogen": "^0.6.1",
     "eslint": "^9.27.0",
@@ -35,7 +38,7 @@
     "prettier": "^3.5.3",
     "pretty-quick": "^4.1.1",
     "supertest": "^7.1.1",
-    "typescript": "^5.8.3",
+    "typescript": "~6.0.3",
     "vitepress": "^1.6.3"
   },
   "optionalDependencies": {

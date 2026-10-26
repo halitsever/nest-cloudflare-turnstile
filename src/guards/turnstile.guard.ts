@@ -6,7 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { TurnstileService } from '../services/turnstile.service';
-import { ITurnstileOptions } from '../interfaces/turnstile';
+import type { ITurnstileOptions } from '../interfaces/turnstile';
 import { Messages } from '../constants/messages';
 
 @Injectable()

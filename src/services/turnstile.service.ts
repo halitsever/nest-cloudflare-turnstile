@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { firstValueFrom, catchError } from 'rxjs';
-import { ITurnstileOptions } from '../interfaces/turnstile';
+import type { ITurnstileOptions } from '../interfaces/turnstile';
 
 @Injectable()
 export class TurnstileService {
