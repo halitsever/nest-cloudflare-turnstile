@@ -73,7 +73,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "husky": "^9.1.7",
-    "msw": "^2.15.0",
+    "msw": "^3.0.3",
     "prettier": "^3.9.10",
     "pretty-quick": "^4.2.2",
     "publint": "^0.3.25",
