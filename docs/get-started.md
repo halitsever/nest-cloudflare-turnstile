@@ -94,7 +94,7 @@ await fetch('/auth/login', {
 });
 ```
 
-To read the token from somewhere else, pass `tokenResponse`:
+To read the token from somewhere else, such as a field the widget renamed with `data-response-field-name`, pass `tokenResponse`:
 
 ```ts
 TurnstileModule.forRoot({

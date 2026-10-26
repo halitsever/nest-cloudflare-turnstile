@@ -25,7 +25,7 @@ export class AuthController {
 }
 ```
 
-The route's action wins over the controller's, and the controller's wins over the module's `expectedAction`. When both the controller and the route carry the decorator, the token is still checked once per call.
+An action can be up to 32 characters long and may contain letters, digits, `_` and `-`. The route's action wins over the controller's, and the controller's wins over the module's `expectedAction`. When both the controller and the route carry the decorator, the token is still checked once per call.
 
 ## Protect every route
 
@@ -108,6 +108,27 @@ export class OrdersController {
 Import `TurnstileVerifyResponse` with `import type`. With `isolatedModules` and `emitDecoratorMetadata` both on, TypeScript requires that for interfaces used in decorated parameters.
 
 It is `undefined` when `skipIf` let the request through.
+
+## Ephemeral IDs
+
+On Enterprise plans, Cloudflare can add an [Ephemeral ID](https://developers.cloudflare.com/turnstile/additional-configuration/ephemeral-id/) to the result: a short-lived device ID that stays the same when an attacker switches IP addresses. It changes within a few days, so use it for rate limits and fraud checks rather than to identify people:
+
+```ts
+@Post('signup')
+@TurnstileCaptcha({ action: 'signup' })
+async signUp(
+  @Body() body: SignUpDto,
+  @TurnstileResult() result: TurnstileVerifyResponse,
+) {
+  const deviceId = result.metadata?.ephemeral_id;
+  if (deviceId && (await this.signups.countRecent(deviceId)) >= 3) {
+    throw new ForbiddenException('Too many sign-ups from this device.');
+  }
+  return this.signups.create(body);
+}
+```
+
+To turn such tokens away in the guard, check the ID in [`validateResult`](./turnstile-options#validateresult) instead.
 
 ## Verify a token yourself
 

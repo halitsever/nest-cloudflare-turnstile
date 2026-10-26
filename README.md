@@ -104,11 +104,13 @@ TurnstileModule.forRoot({
 ## Documentation
 
 - [Get started](https://halitsever.github.io/nest-cloudflare-turnstile/get-started): module setup and sending the token from the browser
+- [Frontend frameworks](https://halitsever.github.io/nest-cloudflare-turnstile/frontend): sending the token from React, Next.js, Vue and Angular
 - [Options](https://halitsever.github.io/nest-cloudflare-turnstile/turnstile-options): every option with its default
 - [Error handling](https://halitsever.github.io/nest-cloudflare-turnstile/error-handling): responses, custom exceptions and `onError`
 - [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing): `skipIf` and Cloudflare's test keys
 - [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, a global guard, several widgets, the verification result, GraphQL, WebSockets and manual checks
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
+- [Migrating from @nestlab/google-recaptcha](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha)
 
 <p align="center">
   <a href="https://github.com/halitsever/nest-cloudflare-turnstile/issues"><img src="https://halitsever-api.vercel.app/api/issue" alt="Issues" /></a>

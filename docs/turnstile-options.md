@@ -87,7 +87,7 @@ TurnstileModule.forRoot({
 });
 ```
 
-A token solved in someone else's session then fails, even though Cloudflare accepted it. The function can be async, and its third argument is the `ExecutionContext`.
+A token solved in someone else's session then fails, even though Cloudflare accepted it. `data-cdata` takes up to 255 letters, digits, `_` and `-`, so encode a session ID that has other characters. The function can be async, and its third argument is the `ExecutionContext`.
 
 ## timeout
 
