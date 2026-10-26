@@ -1,87 +1,116 @@
-Installation:
+# Get started
+
+## Install
 
 ```bash
-npm install nest-cloudflare-turnstile --save
+npm install nest-cloudflare-turnstile
 ```
 
-add module to imports array with forRoot method:
+The package needs Node.js 20 or later and works with NestJS 10, 11 and 12. It uses the `@nestjs/common` and `@nestjs/core` packages your app already has.
 
-```javascript
+## Register the module
 
-  imports: [TurnstileModule.forRoot({
-    secretKey: '1x0000000000000000000000000000000AA',
-    tokenResponse: (req) => req.body.turnstileToken // or you can use req.headers.turnstileToken
-  })],
+Import `TurnstileModule` once, usually in `AppModule`, with the secret key of your widget from the Cloudflare dashboard:
 
-```
+```ts
+import { Module } from '@nestjs/common';
+import { TurnstileModule } from 'nest-cloudflare-turnstile';
 
-or with forRootAsync method:
-
-```javascript
- imports: [
-    TurnstileModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const secretKey = config.get<string>(
-          'CLOUDFLARE_TURNSTILE_PRIVATE_KEY',
-        );
-        if (!secretKey) {
-          throw new Error('Missing Cloudflare Turnstile secret');
-        }
-
-        return {
-          secretKey,
-          tokenResponse: (req) => req.body.turnstileToken,
-        };
-      },
+@Module({
+  imports: [
+    TurnstileModule.forRoot({
+      secretKey: process.env.TURNSTILE_SECRET_KEY,
     }),
-  ]
+  ],
+})
+export class AppModule {}
 ```
 
-use `TurnstileGuard` guard on controller:
+If the secret comes from `@nestjs/config`, use `forRootAsync`:
 
-```javascript
-  import { TurnstileCaptcha } from 'nest-cloudflare-turnstile'
+```ts
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TurnstileModule } from 'nest-cloudflare-turnstile';
 
-  @Post()
+TurnstileModule.forRootAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    secretKey: config.getOrThrow<string>('TURNSTILE_SECRET_KEY'),
+  }),
+});
+```
+
+The module is global, so feature modules can use the guard without importing it again. The app refuses to start when `secretKey` is empty, unless [`skipIf`](./turnstile-options#skipif) is `true`.
+
+## Protect a route
+
+```ts
+import { Controller, Post } from '@nestjs/common';
+import { TurnstileCaptcha } from 'nest-cloudflare-turnstile';
+
+@Controller('auth')
+export class AuthController {
+  @Post('login')
   @TurnstileCaptcha()
-  getHello(): string {
-    return this.appService.getHello();
+  login() {
+    // Runs only after Cloudflare accepted the token.
   }
+}
 ```
 
-## skipIf
+Put the decorator on the controller class to protect every route in it.
 
-Use `skipIf` to bypass Turnstile validation conditionally. This is useful in local development or testing environments where you don't want to validate real tokens.
+## Send the token from the browser
 
-```javascript
-imports: [TurnstileModule.forRoot({
-  secretKey: '1x0000000000000000000000000000000AA',
-  tokenResponse: (req) => req.body.turnstileToken,
-  skipIf: process.env.NODE_ENV === 'development',
-})],
+Inside a form, the Turnstile widget adds a hidden `cf-turnstile-response` field. The guard reads that field by default:
+
+```html
+<script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer
+></script>
+
+<form action="/auth/login" method="POST">
+  <input name="email" type="email" />
+  <div class="cf-turnstile" data-sitekey="YOUR_SITE_KEY"></div>
+  <button type="submit">Log in</button>
+</form>
 ```
 
-When `skipIf` is `true`, the guard will allow all requests through without contacting Cloudflare.
+When the page calls your API with `fetch`, send the token in a header of the same name. The guard checks the header when the body has no token:
 
-## exceptionFactory
+```js
+const token = turnstile.getResponse(widgetId);
 
-Use `exceptionFactory` to customize the exception thrown when validation fails. The factory receives a `reason` argument — either `'missing'` (no token provided) or `'invalid'` (token failed verification).
-
-```javascript
-import { UnauthorizedException } from '@nestjs/common';
-
-imports: [TurnstileModule.forRoot({
-  secretKey: '1x0000000000000000000000000000000AA',
-  tokenResponse: (req) => req.body.turnstileToken,
-  exceptionFactory: (reason) => {
-    if (reason === 'missing') {
-      return new UnauthorizedException('Turnstile token is required.');
-    }
-    return new UnauthorizedException('Turnstile token is invalid.');
+await fetch('/auth/login', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'cf-turnstile-response': token,
   },
-})],
+  body: JSON.stringify({ email }),
+});
 ```
 
-Without `exceptionFactory`, the guard throws a `BadRequestException` by default.
+To read the token from somewhere else, pass `tokenResponse`:
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  tokenResponse: (req) => req.body?.captcha,
+});
+```
+
+Node.js lowercases header names, so read `req.headers['x-captcha-token']`, never `req.headers['X-Captcha-Token']`.
+
+## When a check fails
+
+| Situation                                              | Response                                   |
+| ------------------------------------------------------ | ------------------------------------------ |
+| No token in the request                                | 400 `Missing turnstile verification code.` |
+| Cloudflare rejects the token                           | 400 `Invalid turnstile verification code.` |
+| Cloudflare cannot be reached, or it rejects the secret | 500 `Failed turnstile verification.`       |
+
+[Error handling](./error-handling) shows how to change these responses. [Testing](./testing) covers local development and automated tests.
