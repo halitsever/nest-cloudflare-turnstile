@@ -1,8 +1,8 @@
 <p align="center">
   <img src="https://i.ibb.co/HT1M4Kb/image.png" height="80" width="80" alt="Cloud logo" />
+  <br />
+  <img src="https://halitsever-api.vercel.app/api/repo-title?title=Cloudflare%20Turnstile%20NestJS" alt="Cloudflare Turnstile NestJS" />
 </p>
-
-<h1 align="center">Cloudflare Turnstile for NestJS</h1>
 
 <p align="center">
   ☁️ A guard that checks <a href="https://developers.cloudflare.com/turnstile/">Cloudflare Turnstile</a> tokens before your NestJS handlers run.
@@ -20,7 +20,9 @@
   <a href="https://halitsever.github.io/nest-cloudflare-turnstile">Documentation</a>
 </p>
 
-## Features
+<p align="center">
+  <img src="https://halitsever-api.vercel.app/api/details" alt="Details" />
+</p>
 
 - One decorator for a route or a whole controller
 - NestJS 10, 11 and 12, on Express or Fastify, including GraphQL resolvers
@@ -28,7 +30,9 @@
 - Hostname and action checks, as Cloudflare recommends
 - One safe retry when siteverify fails, and errors that never contain your secret key
 
-## Install
+<p align="center">
+  <img src="https://halitsever-api.vercel.app/api/installation" alt="Installation" />
+</p>
 
 ```bash
 npm install nest-cloudflare-turnstile
@@ -103,10 +107,20 @@ TurnstileModule.forRoot({
 - [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, the verification result, GraphQL and manual checks
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
 
-## Contributing
+<p align="center">
+  <a href="https://github.com/halitsever/nest-cloudflare-turnstile/issues"><img src="https://halitsever-api.vercel.app/api/issue" alt="Issues" /></a>
+</p>
 
 Issues and pull requests are welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) explains the setup, and [SECURITY.md](./SECURITY.md) explains how to report a vulnerability privately.
 
-## License
+<p align="center">
+  <img src="https://halitsever-api.vercel.app/api/sponsor" alt="Sponsor" />
+</p>
 
-MIT © [Halit Sever](https://halit.org)
+<p align="center">
+  <img src="https://halitsever-api.vercel.app/api/license" alt="License" />
+</p>
+
+<p align="center">
+  MIT LICENSE | <a href="https://halit.org">Halit Sever</a>
+</p>
