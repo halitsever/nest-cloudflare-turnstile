@@ -10,6 +10,7 @@
 | `expectedHostname` | `string \| string[]`                                  | any hostname                           |
 | `expectedAction`   | `string \| string[]`                                  | any action                             |
 | `timeout`          | `number`                                              | `5000`                                 |
+| `fetch`            | `typeof fetch`                                        | the global `fetch`                     |
 | `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>` | `false`                                |
 | `exceptionFactory` | `(reason, details) => Error`                          | `BadRequestException`                  |
 | `onError`          | `(error: TurnstileError) => void`                     | none                                   |
@@ -63,6 +64,26 @@ The guard skips the hostname and action checks for results from Cloudflare's tes
 ## timeout
 
 How long to wait for each siteverify call, in milliseconds. When a call times out, fails on the network, gets an HTTP 5xx answer or comes back with `internal-error`, the guard tries once more with the same idempotency key. If the second attempt also fails, the request gets a 500 and `onError` is called.
+
+## fetch
+
+Sends the siteverify requests instead of the `fetch` built into Node.js. Use it to route the calls through your own HTTP client, or to log them:
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  fetch: async (input, init) => {
+    const started = Date.now();
+    const response = await fetch(input, init);
+    console.log(
+      `siteverify answered ${response.status} in ${Date.now() - started} ms`,
+    );
+    return response;
+  },
+});
+```
+
+The timeout and the retry still apply to it. For proxies, see [Outbound proxies](./advanced#outbound-proxies).
 
 ## skipIf
 

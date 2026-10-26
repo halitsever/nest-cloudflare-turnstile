@@ -27,6 +27,8 @@ export interface ITurnstileOptions {
   expectedAction?: string | string[];
   /** Milliseconds to wait for each siteverify attempt. Defaults to 5000. */
   timeout?: number;
+  /** Sends the siteverify requests instead of the global `fetch`, for example through a proxy. */
+  fetch?: typeof fetch;
   /** Lets requests through without a check, for example in tests. */
   skipIf?:
     boolean | ((context: ExecutionContext) => boolean | Promise<boolean>);

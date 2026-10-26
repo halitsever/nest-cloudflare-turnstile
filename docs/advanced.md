@@ -100,7 +100,7 @@ Nothing changes. The guard reads `req.body` and `req.headers` from the Fastify r
 
 ## Outbound proxies
 
-The module calls Cloudflare with the `fetch` built into Node.js, which ignores `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` by default. On Node.js 22.21, 24 or later, start the app with `NODE_USE_ENV_PROXY=1` (or the `--use-env-proxy` flag) to route the calls through your proxy. Older versions need a global dispatcher from the `undici` package, such as `EnvHttpProxyAgent` set with `setGlobalDispatcher`.
+The module calls Cloudflare with the `fetch` built into Node.js, which ignores `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` by default. On Node.js 22.21, 24 or later, start the app with `NODE_USE_ENV_PROXY=1` (or the `--use-env-proxy` flag) to route the calls through your proxy. On older versions, pass a [`fetch`](./turnstile-options#fetch) that goes through your proxy, or set a global dispatcher from the `undici` package, such as `EnvHttpProxyAgent` with `setGlobalDispatcher`.
 
 ## Module setup options
 
