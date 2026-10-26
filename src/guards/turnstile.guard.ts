@@ -62,6 +62,11 @@ export class TurnstileGuard implements CanActivate {
     const mismatch = this.findMismatch(result, context);
     if (mismatch) throw this.reject('invalid', [mismatch]);
 
+    const { validateResult } = this.options;
+    if (validateResult && !(await validateResult(result, request, context))) {
+      throw this.reject('invalid', ['validate-result-failed']);
+    }
+
     verifiedCalls.add(context);
     if (request) request[TURNSTILE_RESULT] = result;
     return true;

@@ -25,6 +25,12 @@ export interface ITurnstileOptions {
   expectedHostname?: string | string[];
   /** Widget actions a token may carry. `@TurnstileCaptcha({ action })` takes precedence. */
   expectedAction?: string | string[];
+  /** Runs after Cloudflare accepted the token. Return false to reject it, for example when `cdata` does not match the session. */
+  validateResult?: (
+    result: TurnstileVerifyResponse,
+    req: any,
+    context: ExecutionContext,
+  ) => boolean | Promise<boolean>;
   /** Milliseconds to wait for each siteverify attempt. Defaults to 5000. */
   timeout?: number;
   /** Sends the siteverify requests instead of the global `fetch`, for example through a proxy. */
