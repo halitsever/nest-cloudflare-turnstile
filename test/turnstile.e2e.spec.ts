@@ -129,6 +129,24 @@ describe.each<Adapter>(['express', 'fastify'])(
       expect(siteverifyRequests).toHaveLength(0);
     });
 
+    it('treats a missing-input-response verdict as a missing token', async () => {
+      siteverifyReplies({
+        body: {
+          success: false,
+          'error-codes': ['missing-input-response'],
+          messages: [],
+        },
+      });
+      app = await createApp(adapter);
+
+      const res = await request(app.getHttpServer())
+        .post('/protected')
+        .send({ token: ' ' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Missing turnstile verification code.');
+    });
+
     it('guards every route of a controller decorated at class level', async () => {
       app = await createApp(adapter, {}, [ClassGuardedController]);
 

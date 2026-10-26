@@ -28,6 +28,13 @@ export const wrongSecret = {
   messages: [],
 };
 
+/** Same shape as the other failures; Cloudflare asks callers to retry it. */
+export const internalError = {
+  success: false,
+  'error-codes': ['internal-error'],
+  messages: [],
+};
+
 export type SiteverifyReply =
   | { body: Record<string, unknown>; status?: number; delayMs?: number }
   | 'network-error';

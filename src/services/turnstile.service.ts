@@ -5,6 +5,7 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { SITEVERIFY_URL, TEST_SECRET_KEYS } from '../constants/cloudflare';
 import { Messages } from '../constants/messages';
 import { TURNSTILE_OPTIONS } from '../constants/tokens';
@@ -15,6 +16,15 @@ import type {
 } from '../interfaces/turnstile';
 
 const DEFAULT_TIMEOUT_MS = 5_000;
+const MAX_ATTEMPTS = 2;
+
+/** Codes that blame the secret, the request or Cloudflare rather than the visitor. */
+const SERVER_ERROR_CODES = [
+  'missing-input-secret',
+  'invalid-input-secret',
+  'bad-request',
+  'internal-error',
+];
 
 @Injectable()
 export class TurnstileService implements OnModuleInit {
@@ -42,26 +52,67 @@ export class TurnstileService implements OnModuleInit {
     }
   }
 
+  /**
+   * Asks siteverify about a token. Resolves with the verdict, including rejections;
+   * throws a 500 when the request itself fails or Cloudflare blames the setup.
+   */
   async validateToken(token: string): Promise<TurnstileVerifyResponse> {
-    try {
-      const response = await fetch(SITEVERIFY_URL, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          secret: this.options.secretKey,
-          response: token,
+    const body = JSON.stringify({
+      secret: this.options.secretKey,
+      response: token,
+      idempotency_key: randomUUID(),
+    });
+    const result = await this.post(body);
+    const serverCodes = result.success
+      ? []
+      : (result['error-codes'] ?? []).filter((code) =>
+          SERVER_ERROR_CODES.includes(code),
+        );
+    if (serverCodes.length > 0) {
+      throw this.fail(
+        new TurnstileError('Turnstile siteverify refused the request', {
+          errorCodes: serverCodes,
         }),
-        signal: AbortSignal.timeout(this.options.timeout ?? DEFAULT_TIMEOUT_MS),
-      });
-      if (!response.ok) {
-        throw new Error(`siteverify answered HTTP ${response.status}`);
-      }
-      return (await response.json()) as TurnstileVerifyResponse;
-    } catch (cause) {
-      this.options.onError?.(
-        new TurnstileError('Turnstile siteverify request failed', { cause }),
       );
-      throw new InternalServerErrorException(Messages.FAIL);
     }
+    return result;
+  }
+
+  /** Tries twice; the shared idempotency key lets Cloudflare treat the retry as the same check. */
+  private async post(body: string): Promise<TurnstileVerifyResponse> {
+    let failure: unknown;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const result = await this.request(body);
+        const retryable = result['error-codes']?.includes('internal-error');
+        if (!retryable || attempt === MAX_ATTEMPTS) return result;
+      } catch (error) {
+        failure = error;
+      }
+    }
+    throw this.fail(
+      new TurnstileError('Turnstile siteverify request failed', {
+        cause: failure,
+      }),
+    );
+  }
+
+  private async request(body: string): Promise<TurnstileVerifyResponse> {
+    const response = await fetch(SITEVERIFY_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+      signal: AbortSignal.timeout(this.options.timeout ?? DEFAULT_TIMEOUT_MS),
+    });
+    // Bad secrets and malformed requests come back as 4xx with a JSON verdict.
+    if (response.status >= 500) {
+      throw new Error(`siteverify answered HTTP ${response.status}`);
+    }
+    return (await response.json()) as TurnstileVerifyResponse;
+  }
+
+  private fail(error: TurnstileError): InternalServerErrorException {
+    this.options.onError?.(error);
+    return new InternalServerErrorException(Messages.FAIL);
   }
 }

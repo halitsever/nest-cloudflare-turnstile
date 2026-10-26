@@ -44,7 +44,13 @@ export class TurnstileGuard implements CanActivate {
     }
 
     const result = await this.turnstileService.validateToken(token);
-    if (!result.success) throw this.reject('invalid', result['error-codes']);
+    if (!result.success) {
+      const codes = result['error-codes'] ?? [];
+      const reason = codes.includes('missing-input-response')
+        ? 'missing'
+        : 'invalid';
+      throw this.reject(reason, codes);
+    }
 
     const mismatch = this.findMismatch(result, context);
     if (mismatch) throw this.reject('invalid', [mismatch]);
