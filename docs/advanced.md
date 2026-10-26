@@ -98,6 +98,10 @@ Every guarded field checks its own token, and Cloudflare accepts a token only on
 
 Nothing changes. The guard reads `req.body` and `req.headers` from the Fastify request, and classic form posts work because Nest registers a form body parser.
 
+## Outbound proxies
+
+The module calls Cloudflare with the `fetch` built into Node.js, which ignores `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` by default. On Node.js 22.21, 24 or later, start the app with `NODE_USE_ENV_PROXY=1` (or the `--use-env-proxy` flag) to route the calls through your proxy. Older versions need a global dispatcher from the `undici` package, such as `EnvHttpProxyAgent` set with `setGlobalDispatcher`.
+
 ## Module setup options
 
 `forRootAsync` also accepts a class that builds the options, or an existing provider:

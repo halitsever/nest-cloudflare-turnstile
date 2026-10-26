@@ -7,6 +7,7 @@ Most apps upgrade by bumping the version. The module, the decorator and their op
 - Node.js 20 or later.
 - NestJS 10, 11 or 12. `@nestjs/common`, `@nestjs/core` and `reflect-metadata` are now peer dependencies, so the package uses your app's copies instead of installing its own. This fixes the 500 responses that NestJS 10 and 12 apps got instead of 400s, which came from a second copy of NestJS inside the package.
 - axios, `@nestjs/axios` and rxjs are no longer installed. The package calls Cloudflare with the `fetch` built into Node.js.
+- Behind an outbound proxy, check your setup before upgrading. axios read `HTTP_PROXY` and `HTTPS_PROXY` on its own, but Node.js `fetch` ignores them unless you opt in, and every guarded route would answer 500. See [Outbound proxies](./advanced#outbound-proxies).
 
 ## Behavior changes
 

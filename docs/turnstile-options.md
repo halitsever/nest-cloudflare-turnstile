@@ -74,13 +74,15 @@ TurnstileModule.forRoot({
   skipIf: process.env.NODE_ENV === 'test',
 });
 
-// or, per request
+// or, per request: skip for staff that an authentication guard already identified
 TurnstileModule.forRoot({
   secretKey: process.env.TURNSTILE_SECRET_KEY,
   skipIf: (context) =>
-    context.switchToHttp().getRequest().headers['x-internal-job'] === 'yes',
+    context.switchToHttp().getRequest().user?.role === 'staff',
 });
 ```
+
+Base the decision only on data your server set, such as the user an authentication guard attached. Headers, query strings and the body come from the visitor, so a rule built on them lets anyone skip the check. For `req.user` to be there in time, register the authentication guard globally with `APP_GUARD`, because global guards run before the guards of a controller or route.
 
 ## exceptionFactory
 

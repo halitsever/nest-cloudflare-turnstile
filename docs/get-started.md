@@ -105,6 +105,8 @@ TurnstileModule.forRoot({
 
 Node.js lowercases header names, so read `req.headers['x-captcha-token']`, never `req.headers['X-Captcha-Token']`.
 
+Guards run before interceptors, so a multipart body that `FileInterceptor` parses is still empty when the guard looks for the token. For file uploads, send the token in the `cf-turnstile-response` header.
+
 ## When a check fails
 
 | Situation                                              | Response                                   |
