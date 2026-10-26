@@ -49,9 +49,9 @@ export class TurnstileGuard implements CanActivate {
     const readToken =
       widget?.tokenResponse ?? this.options.tokenResponse ?? readDefaultToken;
     const token = readToken(request, context);
-    if (!token) throw await this.reject('missing', [], context);
+    if (!token) throw this.reject('missing', [], context);
     if (typeof token !== 'string' || token.length > MAX_TOKEN_LENGTH) {
-      throw await this.reject('invalid', [], context);
+      throw this.reject('invalid', [], context);
     }
 
     const result = await this.turnstileService.validateToken(token, {
@@ -63,15 +63,15 @@ export class TurnstileGuard implements CanActivate {
       const reason = codes.includes('missing-input-response')
         ? 'missing'
         : 'invalid';
-      throw await this.reject(reason, codes, context);
+      throw this.reject(reason, codes, context);
     }
 
     const mismatch = this.findMismatch(result, context, widget);
-    if (mismatch) throw await this.reject('invalid', [mismatch], context);
+    if (mismatch) throw this.reject('invalid', [mismatch], context);
 
     const { validateResult } = this.options;
     if (validateResult && !(await validateResult(result, request, context))) {
-      throw await this.reject('invalid', ['validate-result-failed'], context);
+      throw this.reject('invalid', ['validate-result-failed'], context);
     }
 
     verifiedCalls.add(context);
@@ -132,21 +132,32 @@ export class TurnstileGuard implements CanActivate {
       .find((value) => value !== undefined);
   }
 
-  private async reject(
+  private reject(
     reason: TurnstileFailureReason,
     errorCodes: string[],
     context: ExecutionContext,
-  ): Promise<Error> {
+  ): Error {
     if (this.options.exceptionFactory) {
       return this.options.exceptionFactory(reason, { errorCodes }, context);
     }
     const message = reason === 'missing' ? Messages.MISSING : Messages.INVALID;
     if (context.getType() === 'ws') {
       // Nest reports any other error on a socket as "Internal server error".
-      const { WsException } = await import('@nestjs/websockets');
-      return new WsException(message);
+      const WsException = loadWsException();
+      if (WsException) return new WsException(message);
     }
     return new BadRequestException(message);
+  }
+}
+
+// An optional peer, loaded on first use. Jest cannot run a native import() here,
+// and the try block lets bundlers build apps that leave the package out.
+function loadWsException(): (new (error: string) => Error) | undefined {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('@nestjs/websockets').WsException;
+  } catch {
+    return undefined;
   }
 }
 

@@ -25,6 +25,10 @@ export default defineConfig([
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   {
+    files: ['test/consumer/*.test.cjs'],
+    languageOptions: { globals: globals.jest },
+  },
+  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
