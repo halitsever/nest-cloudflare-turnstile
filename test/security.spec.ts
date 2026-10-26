@@ -5,10 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import request from 'supertest';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TurnstileCaptcha } from '../src/main';
 import { createApp } from './helpers/app';
 import {
+  rejected,
   siteverifyReplies,
   siteverifyRequests,
   verified,
@@ -187,5 +188,68 @@ describe('security checks', () => {
     expect(res.status).toBe(401);
     expect(res.body.reason).toBe('invalid');
     expect(siteverifyRequests).toHaveLength(0);
+  });
+
+  it('rejects a token when validateResult returns false', async () => {
+    siteverifyReplies({ body: verified });
+    app = await createApp('express', {
+      validateResult: () => false,
+      exceptionFactory,
+    });
+
+    const res = await request(app.getHttpServer())
+      .post('/protected')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({
+      reason: 'invalid',
+      errorCodes: ['validate-result-failed'],
+    });
+  });
+
+  it('binds a token to the session through cdata', async () => {
+    siteverifyReplies({ body: verified });
+    app = await createApp('express', {
+      validateResult: async (result, req) =>
+        result.cdata === req.headers['x-session-id'],
+    });
+
+    const same = await request(app.getHttpServer())
+      .post('/protected')
+      .set('x-session-id', 'sessionid-123456789')
+      .send({ token: 'token-from-widget' });
+    const other = await request(app.getHttpServer())
+      .post('/protected')
+      .set('x-session-id', 'someone-else')
+      .send({ token: 'token-from-widget' });
+
+    expect([same.status, other.status]).toEqual([201, 400]);
+  });
+
+  it('hands the execution context to validateResult', async () => {
+    siteverifyReplies({ body: verified });
+    app = await createApp('express', {
+      validateResult: (_result, _req, context) =>
+        context.getClass().name === 'ProtectedController',
+    });
+
+    const res = await request(app.getHttpServer())
+      .post('/protected')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.status).toBe(201);
+  });
+
+  it('skips validateResult when Cloudflare rejects the token', async () => {
+    siteverifyReplies({ body: rejected });
+    const validateResult = vi.fn(() => true);
+    app = await createApp('express', { validateResult });
+
+    await request(app.getHttpServer())
+      .post('/protected')
+      .send({ token: 'expired-token' });
+
+    expect(validateResult).not.toHaveBeenCalled();
   });
 });

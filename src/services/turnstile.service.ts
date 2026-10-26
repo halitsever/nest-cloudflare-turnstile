@@ -103,7 +103,8 @@ export class TurnstileService implements OnModuleInit {
   }
 
   private async request(body: string): Promise<TurnstileVerifyResponse> {
-    const response = await fetch(SITEVERIFY_URL, {
+    const send = this.options.fetch ?? fetch;
+    const response = await send(SITEVERIFY_URL, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body,
@@ -111,6 +112,8 @@ export class TurnstileService implements OnModuleInit {
     });
     // Bad secrets and malformed requests come back as 4xx with a JSON verdict.
     if (response.status >= 500) {
+      // An unread body holds its connection until garbage collection; waiting on the cancel could hang.
+      response.body?.cancel().catch(() => undefined);
       throw new Error(`siteverify answered HTTP ${response.status}`);
     }
     return (await response.json()) as TurnstileVerifyResponse;

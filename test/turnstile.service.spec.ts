@@ -12,6 +12,7 @@ import { SECRET } from './helpers/app';
 import {
   internalError,
   rejected,
+  SITEVERIFY_URL,
   siteverifyReplies,
   siteverifyRequests,
   verified,
@@ -288,5 +289,50 @@ describe('TurnstileService.validateToken', () => {
     expect(logError).toHaveBeenCalledWith(
       expect.stringContaining('reporting is down'),
     );
+  });
+
+  it('sends siteverify calls through the fetch given in the options', async () => {
+    const customFetch = vi.fn(async () => Response.json(verified));
+    const service = await createService({ fetch: customFetch });
+
+    await expect(service.validateToken('token-from-widget')).resolves.toEqual(
+      verified,
+    );
+    expect(customFetch).toHaveBeenCalledWith(
+      SITEVERIFY_URL,
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('retries through the custom fetch as well', async () => {
+    const customFetch = vi
+      .fn<typeof fetch>()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValueOnce(Response.json(verified));
+    const service = await createService({ fetch: customFetch });
+
+    await expect(service.validateToken('token-from-widget')).resolves.toEqual(
+      verified,
+    );
+    expect(customFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('releases the body of a 5xx answer before giving up on it', async () => {
+    let released = 0;
+    const serverError = () =>
+      new Response(
+        new ReadableStream({
+          cancel() {
+            released++;
+          },
+        }),
+        { status: 503 },
+      );
+    vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    const service = await createService({ fetch: async () => serverError() });
+
+    await service.validateToken('token-from-widget').catch(() => undefined);
+
+    expect(released).toBe(2);
   });
 });

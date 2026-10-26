@@ -3,6 +3,8 @@ name: Publish to npm
 on:
   release:
     types: [published]
+  # A manual run rehearses the publish with --dry-run and uploads nothing.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,6 +25,7 @@ jobs:
       - run: npm ci
       # A release cut from an unbumped commit would otherwise publish under the old version.
       - name: Check that the tag matches package.json
+        if: github.event_name == 'release'
         run: |
           version="v$(node -p "require('./package.json').version")"
           if [ "$version" != "$GITHUB_REF_NAME" ]; then
@@ -33,4 +36,5 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run lint:package
-      - run: npm publish
+      # npm reports a failed OIDC token exchange as a bare 404; the verbose log carries the reason.
+      - run: npm publish --loglevel verbose ${{ github.event_name != 'release' && '--dry-run' || '' }}

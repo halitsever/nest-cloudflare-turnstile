@@ -1,5 +1,34 @@
 # Changelog
 
+## v1.1.0
+
+[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v1.0.0...v1.1.0)
+
+New options for checks of your own and for tests, plus a fix for 5xx answers from siteverify. Nothing in 1.0 changes.
+
+### 🚀 Enhancements
+
+- Add a fetch option and release the body of 5xx answers ([9994d96](https://github.com/halitsever/nest-cloudflare-turnstile/commit/9994d96))
+- Add validateResult for checks of your own ([7649fa2](https://github.com/halitsever/nest-cloudflare-turnstile/commit/7649fa2))
+- Add a TurnstileService stub for your own tests ([461a4d1](https://github.com/halitsever/nest-cloudflare-turnstile/commit/461a4d1))
+
+### 📖 Documentation
+
+- Bring back the README images ([a3be503](https://github.com/halitsever/nest-cloudflare-turnstile/commit/a3be503))
+
+### ✅ Tests
+
+- Type-check the 1.1 options in consumer apps ([350b514](https://github.com/halitsever/nest-cloudflare-turnstile/commit/350b514))
+
+### 🤖 CI
+
+- Rehearse the npm publish from a manual run ([bd97eac](https://github.com/halitsever/nest-cloudflare-turnstile/commit/bd97eac))
+- Keep Dependabot off majors the toolchain cannot take ([df56b82](https://github.com/halitsever/nest-cloudflare-turnstile/commit/df56b82))
+
+### ❤️ Contributors
+
+- Halit Sever ([@halitsever](https://github.com/halitsever))
+
 ## v1.0.0
 
 [compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v0.0.17...v1.0.0)

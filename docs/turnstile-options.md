@@ -2,18 +2,20 @@
 
 `forRoot` takes these options. `forRootAsync` takes the same object from its factory.
 
-| Option             | Type                                                  | Default                                |
-| ------------------ | ----------------------------------------------------- | -------------------------------------- |
-| `secretKey`        | `string \| undefined`                                 | required                               |
-| `tokenResponse`    | `(req, context) => unknown`                           | `cf-turnstile-response` body or header |
-| `remoteIp`         | `(req) => string \| undefined`                        | not sent                               |
-| `expectedHostname` | `string \| string[]`                                  | any hostname                           |
-| `expectedAction`   | `string \| string[]`                                  | any action                             |
-| `timeout`          | `number`                                              | `5000`                                 |
-| `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>` | `false`                                |
-| `exceptionFactory` | `(reason, details) => Error`                          | `BadRequestException`                  |
-| `onError`          | `(error: TurnstileError) => void`                     | none                                   |
-| `isGlobal`         | `boolean`                                             | `true`                                 |
+| Option             | Type                                                    | Default                                |
+| ------------------ | ------------------------------------------------------- | -------------------------------------- |
+| `secretKey`        | `string \| undefined`                                   | required                               |
+| `tokenResponse`    | `(req, context) => unknown`                             | `cf-turnstile-response` body or header |
+| `remoteIp`         | `(req) => string \| undefined`                          | not sent                               |
+| `expectedHostname` | `string \| string[]`                                    | any hostname                           |
+| `expectedAction`   | `string \| string[]`                                    | any action                             |
+| `validateResult`   | `(result, req, context) => boolean \| Promise<boolean>` | none                                   |
+| `timeout`          | `number`                                                | `5000`                                 |
+| `fetch`            | `typeof fetch`                                          | the global `fetch`                     |
+| `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
+| `exceptionFactory` | `(reason, details) => Error`                            | `BadRequestException`                  |
+| `onError`          | `(error: TurnstileError) => void`                       | none                                   |
+| `isGlobal`         | `boolean`                                               | `true`                                 |
 
 ## secretKey
 
@@ -60,9 +62,52 @@ The action is a label you give a widget with `data-action`, such as `login` or `
 
 The guard skips the hostname and action checks for results from Cloudflare's test keys, because those never report the real values.
 
+## validateResult
+
+Runs after Cloudflare accepted the token and the hostname and action checks passed. Return `false` to reject the token like an invalid one, with the `validate-result-failed` error code, or throw your own exception.
+
+A common use is to bind the token to the visitor's session. Put the session ID in the widget's `data-cdata` attribute, then compare it on the server:
+
+```html
+<div
+  class="cf-turnstile"
+  data-sitekey="YOUR_SITE_KEY"
+  data-cdata="SESSION_ID"
+></div>
+```
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  validateResult: (result, req) => result.cdata === req.session.id,
+});
+```
+
+A token solved in someone else's session then fails, even though Cloudflare accepted it. The function can be async, and its third argument is the `ExecutionContext`.
+
 ## timeout
 
 How long to wait for each siteverify call, in milliseconds. When a call times out, fails on the network, gets an HTTP 5xx answer or comes back with `internal-error`, the guard tries once more with the same idempotency key. If the second attempt also fails, the request gets a 500 and `onError` is called.
+
+## fetch
+
+Sends the siteverify requests instead of the `fetch` built into Node.js. Use it to route the calls through your own HTTP client, or to log them:
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  fetch: async (input, init) => {
+    const started = Date.now();
+    const response = await fetch(input, init);
+    console.log(
+      `siteverify answered ${response.status} in ${Date.now() - started} ms`,
+    );
+    return response;
+  },
+});
+```
+
+The timeout and the retry still apply to it. For proxies, see [Outbound proxies](./advanced#outbound-proxies).
 
 ## skipIf
 

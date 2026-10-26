@@ -33,15 +33,16 @@ Return an `HttpException` so Nest turns it into the status you chose. Any other 
 
 ### Error codes
 
-`errorCodes` holds Cloudflare's codes, or one of two codes the guard adds itself. It is empty when the token was missing or malformed before any call to Cloudflare.
+`errorCodes` holds Cloudflare's codes, or one of the codes the guard adds itself. It is empty when the token was missing or malformed before any call to Cloudflare.
 
-| Code                     | Meaning                                                                 |
-| ------------------------ | ----------------------------------------------------------------------- |
-| `missing-input-response` | Cloudflare received no token (reported as `missing`)                    |
-| `invalid-input-response` | The token is invalid, malformed or expired                              |
-| `timeout-or-duplicate`   | The token was already used or is older than five minutes                |
-| `hostname-mismatch`      | Added by the guard: the token's hostname is not in `expectedHostname`   |
-| `action-mismatch`        | Added by the guard: the token's action is not the one the route expects |
+| Code                     | Meaning                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `missing-input-response` | Cloudflare received no token (reported as `missing`)                                      |
+| `invalid-input-response` | The token is invalid, malformed or expired                                                |
+| `timeout-or-duplicate`   | The token was already used or is older than five minutes                                  |
+| `hostname-mismatch`      | Added by the guard: the token's hostname is not in `expectedHostname`                     |
+| `action-mismatch`        | Added by the guard: the token's action is not the one the route expects                   |
+| `validate-result-failed` | Added by the guard: [`validateResult`](./turnstile-options#validateresult) returned false |
 
 ## Setup and network errors
 
