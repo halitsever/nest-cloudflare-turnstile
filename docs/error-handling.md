@@ -68,6 +68,6 @@ TurnstileModule.forRoot({
 
 Without `onError`, the module logs these errors with Nest's `Logger` under the `TurnstileModule` context, because Nest does not log 500 responses that come from an `HttpException`. If `onError` throws or returns a rejected promise, the module logs that too and the request still gets the 500.
 
-`exceptionFactory` is not used for these cases, because they are not the visitor's fault.
+`exceptionFactory` is not used for these cases, because they are not the visitor's fault. To catch a wrong secret key before the first visitor does, turn on [`verifySecretOnStartup`](./turnstile-options#verifysecretonstartup).
 
 To track every check, including the successful ones, use [`onVerify`](./turnstile-options#onverify).

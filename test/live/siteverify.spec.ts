@@ -44,3 +44,26 @@ describe('siteverify with Cloudflare test secrets', () => {
     });
   });
 });
+
+describe('verifySecretOnStartup with Cloudflare', () => {
+  async function start(secretKey: string) {
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        TurnstileModule.forRoot({ secretKey, verifySecretOnStartup: true }),
+      ],
+    }).compile();
+    return moduleRef.init();
+  }
+
+  it('starts with a secret that rejects the dummy token', async () => {
+    await expect(
+      start('2x0000000000000000000000000000000AA'),
+    ).resolves.toBeDefined();
+  });
+
+  it('refuses to start with a made-up secret', async () => {
+    await expect(
+      start('0x4AAAAAAAmadeUpSecretForTesting00000'),
+    ).rejects.toThrow(/invalid-input-secret/);
+  });
+});

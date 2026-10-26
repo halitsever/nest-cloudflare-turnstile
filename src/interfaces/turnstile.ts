@@ -51,6 +51,8 @@ export interface ITurnstileOptions {
   debug?: boolean;
   /** More widgets, each with its own secret key. A route picks one with `@TurnstileCaptcha({ widget })`. */
   widgets?: Record<string, TurnstileWidgetOptions>;
+  /** Asks Cloudflare about every secret key at startup, so a wrong key stops the app instead of failing each check. */
+  verifySecretOnStartup?: boolean;
 }
 
 /** A widget besides the module's own. Settings left out fall back to the module's. */

@@ -6,7 +6,11 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { SITEVERIFY_URL, TEST_SECRET_KEYS } from '../constants/cloudflare';
+import {
+  DUMMY_TOKEN,
+  SITEVERIFY_URL,
+  TEST_SECRET_KEYS,
+} from '../constants/cloudflare';
 import { Messages } from '../constants/messages';
 import { TURNSTILE_OPTIONS } from '../constants/tokens';
 import { TurnstileError } from '../errors/turnstile.error';
@@ -28,6 +32,8 @@ const SERVER_ERROR_CODES = [
   'bad-request',
   'internal-error',
 ];
+
+const SECRET_ERROR_CODES = ['missing-input-secret', 'invalid-input-secret'];
 
 /** A failed exchange keeps Cloudflare's answer, if any, next to the error. */
 type Exchange =
@@ -53,8 +59,13 @@ export class TurnstileService implements OnModuleInit {
     private readonly options: ITurnstileOptions,
   ) {}
 
-  onModuleInit(): void {
-    const { secretKey, skipIf, widgets = {} } = this.options;
+  async onModuleInit(): Promise<void> {
+    const {
+      secretKey,
+      skipIf,
+      verifySecretOnStartup,
+      widgets = {},
+    } = this.options;
     const secrets: Array<[label: string, secret: string | undefined]> = [
       ['', secretKey],
       ...Object.entries(widgets).map(
@@ -79,6 +90,29 @@ export class TurnstileService implements OnModuleInit {
         );
       }
     }
+    if (verifySecretOnStartup && skipIf !== true) {
+      await Promise.all(
+        secrets.map(([label, secret]) => this.verifySecret(label, secret)),
+      );
+    }
+  }
+
+  /** A Cloudflare outage only warns, because it must not keep the app from starting. */
+  private async verifySecret(
+    label: string,
+    secret: string | undefined,
+  ): Promise<void> {
+    const exchange = await this.post(secret, DUMMY_TOKEN);
+    if (exchange.outcome !== 'failed') return;
+    const { errorCodes } = exchange.error;
+    if (errorCodes.some((code) => SECRET_ERROR_CODES.includes(code))) {
+      throw new Error(
+        `Cloudflare refused the TurnstileModule secretKey${label} [${errorCodes.join(', ')}]. Check the key in the Cloudflare dashboard.`,
+      );
+    }
+    this.logger.warn(
+      `TurnstileModule could not check the secretKey${label} with Cloudflare at startup: ${describe(exchange.error)}`,
+    );
   }
 
   /**
@@ -90,14 +124,8 @@ export class TurnstileService implements OnModuleInit {
     { remoteIp, widget }: ValidateTokenOptions = {},
   ): Promise<TurnstileVerifyResponse> {
     const { secretKey } = findWidget(this.options, widget) ?? this.options;
-    const body = JSON.stringify({
-      secret: secretKey,
-      response: token,
-      remoteip: remoteIp,
-      idempotency_key: randomUUID(),
-    });
     const started = performance.now();
-    const exchange = await this.post(body);
+    const exchange = await this.post(secretKey, token, remoteIp);
     this.notify({
       ...exchange,
       widget,
@@ -108,7 +136,17 @@ export class TurnstileService implements OnModuleInit {
   }
 
   /** Tries twice; the shared idempotency key lets Cloudflare treat the retry as the same check. */
-  private async post(body: string): Promise<Exchange> {
+  private async post(
+    secret: string | undefined,
+    token: string,
+    remoteIp?: string,
+  ): Promise<Exchange> {
+    const body = JSON.stringify({
+      secret,
+      response: token,
+      remoteip: remoteIp,
+      idempotency_key: randomUUID(),
+    });
     let cause: unknown;
     for (let attempts = 1; attempts <= MAX_ATTEMPTS; attempts++) {
       try {

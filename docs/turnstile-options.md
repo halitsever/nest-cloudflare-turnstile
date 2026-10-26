@@ -2,27 +2,28 @@
 
 `forRoot` takes these options. `forRootAsync` takes the same object from its factory.
 
-| Option             | Type                                                    | Default                                |
-| ------------------ | ------------------------------------------------------- | -------------------------------------- |
-| `secretKey`        | `string \| undefined`                                   | required                               |
-| `tokenResponse`    | `(req, context) => unknown`                             | `cf-turnstile-response` body or header |
-| `remoteIp`         | `(req) => string \| undefined`                          | not sent                               |
-| `expectedHostname` | `string \| string[]`                                    | any hostname                           |
-| `expectedAction`   | `string \| string[]`                                    | any action                             |
-| `validateResult`   | `(result, req, context) => boolean \| Promise<boolean>` | none                                   |
-| `timeout`          | `number`                                                | `5000`                                 |
-| `fetch`            | `typeof fetch`                                          | the global `fetch`                     |
-| `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
-| `exceptionFactory` | `(reason, details) => Error`                            | `BadRequestException`                  |
-| `onError`          | `(error: TurnstileError) => void`                       | none                                   |
-| `onVerify`         | `(event: TurnstileVerifyEvent) => void`                 | none                                   |
-| `debug`            | `boolean`                                               | `false`                                |
-| `widgets`          | `Record<string, TurnstileWidgetOptions>`                | none                                   |
-| `isGlobal`         | `boolean`                                               | `true`                                 |
+| Option                  | Type                                                    | Default                                |
+| ----------------------- | ------------------------------------------------------- | -------------------------------------- |
+| `secretKey`             | `string \| undefined`                                   | required                               |
+| `tokenResponse`         | `(req, context) => unknown`                             | `cf-turnstile-response` body or header |
+| `remoteIp`              | `(req) => string \| undefined`                          | not sent                               |
+| `expectedHostname`      | `string \| string[]`                                    | any hostname                           |
+| `expectedAction`        | `string \| string[]`                                    | any action                             |
+| `validateResult`        | `(result, req, context) => boolean \| Promise<boolean>` | none                                   |
+| `timeout`               | `number`                                                | `5000`                                 |
+| `fetch`                 | `typeof fetch`                                          | the global `fetch`                     |
+| `skipIf`                | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
+| `exceptionFactory`      | `(reason, details) => Error`                            | `BadRequestException`                  |
+| `onError`               | `(error: TurnstileError) => void`                       | none                                   |
+| `onVerify`              | `(event: TurnstileVerifyEvent) => void`                 | none                                   |
+| `debug`                 | `boolean`                                               | `false`                                |
+| `widgets`               | `Record<string, TurnstileWidgetOptions>`                | none                                   |
+| `verifySecretOnStartup` | `boolean`                                               | `false`                                |
+| `isGlobal`              | `boolean`                                               | `true`                                 |
 
 ## secretKey
 
-The secret key of your widget, from the Cloudflare dashboard. Keep it on the server. The module refuses to start without one unless `skipIf` is `true`, and it logs a warning when one of [Cloudflare's test keys](./testing#cloudflare-test-keys) runs with `NODE_ENV=production`.
+The secret key of your widget, from the Cloudflare dashboard. Keep it on the server. The module refuses to start without one unless `skipIf` is `true`, and it logs a warning when one of [Cloudflare's test keys](./testing#cloudflare-test-keys) runs with `NODE_ENV=production`. To also catch a wrong key at startup, turn on [`verifySecretOnStartup`](#verifysecretonstartup).
 
 ## tokenResponse
 
@@ -197,6 +198,19 @@ TurnstileModule.forRoot({
 ```
 
 A widget can also set its own `expectedHostname`, `expectedAction` and `tokenResponse`. Whatever it leaves out comes from the module. At startup, each widget's secret key gets the same checks as `secretKey`.
+
+## verifySecretOnStartup
+
+Sends Cloudflare's dummy token with each secret key when the app starts. If Cloudflare answers `invalid-input-secret`, the app does not start, so a wrong key fails the deploy instead of every protected request.
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  verifySecretOnStartup: true,
+});
+```
+
+A working key rejects the dummy token as an invalid token, which counts as a pass. If Cloudflare cannot be reached or reports an internal error, the module logs a warning and starts anyway, which can delay startup by up to twice the [`timeout`](#timeout). The check does not run when `skipIf` is `true`, and it does not call `onVerify` or `onError`.
 
 ## isGlobal
 

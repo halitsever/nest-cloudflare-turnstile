@@ -30,6 +30,7 @@
 - Hostname and action checks, as Cloudflare recommends
 - Several widgets in one app, each with its own secret key
 - An `onVerify` hook for metrics, and debug logs without tokens or secrets
+- An optional startup check that Cloudflare accepts your secret key
 - One safe retry when siteverify fails, and errors that never contain your secret key
 
 <p align="center">
