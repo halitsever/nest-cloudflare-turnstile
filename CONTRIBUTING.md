@@ -41,4 +41,6 @@ test/consumer/run.sh 12 /tmp/turnstile/nest-cloudflare-turnstile-*.tgz
 
 ## Releases
 
-Maintainers run `npm run release`, which bumps the version, updates `CHANGELOG.md` from the commit messages and tags the commit. Publishing a GitHub release for that tag starts the publish workflow, which uploads the package to npm through trusted publishing.
+1. Run `npm run release`. It picks the next version from the commit messages, updates `CHANGELOG.md`, commits and tags. Add `-- -r 1.2.0` to choose the version yourself.
+2. Push the commit and the tag with `git push --follow-tags`.
+3. Publish a GitHub release for the tag. The publish workflow refuses tags that do not match `package.json`, runs the checks and uploads the package to npm through trusted publishing.
