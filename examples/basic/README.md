@@ -2,8 +2,6 @@
 
 A NestJS app with one form behind the Turnstile guard. It uses Cloudflare's test keys, so it runs without a Cloudflare account.
 
-[Open it in StackBlitz](https://stackblitz.com/github/halitsever/nest-cloudflare-turnstile/tree/main/examples/basic)
-
 ## Run it locally
 
 ```bash

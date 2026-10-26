@@ -169,6 +169,8 @@ TurnstileModule.forRoot({
 | `durationMs` | Time spent on siteverify, retry included                                                                        |
 | `attempts`   | `1`, or `2` when the first request failed and was retried                                                       |
 
+`result` is Cloudflare's whole answer, including `cdata` and `metadata.ephemeral_id`, so keep it out of logs and metric labels as it is. The hook gets its own copy of it, so removing fields there does not change the check.
+
 The event describes Cloudflare's answer, not the guard's decision. A token Cloudflare accepted counts as `success` even when the hostname or action check or `validateResult` rejects it afterwards. Requests the guard turns away before calling Cloudflare, such as those without a token, produce no event. If `onVerify` throws or returns a rejected promise, the module logs that and the check goes on.
 
 ## debug

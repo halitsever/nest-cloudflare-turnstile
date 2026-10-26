@@ -59,7 +59,9 @@ export class HealthController {
 }
 ```
 
-The closest decorator wins. `@TurnstileCaptcha()` on a route still guards it inside a controller marked with `@SkipTurnstile()`, and `@SkipTurnstile()` on a route exempts it from its controller's `@TurnstileCaptcha()`, with or without the global guard.
+The closest decorator wins. `@TurnstileCaptcha()` on a route still guards it inside a controller marked with `@SkipTurnstile()`, and `@SkipTurnstile()` on a route exempts it from its controller's `@TurnstileCaptcha()`, with or without the global guard. A controller's own decorator also beats one on its parent class.
+
+The global guard covers GraphQL resolvers too, and on NestJS 12 every WebSocket message as well. Every guarded GraphQL field needs a token of its own, so a query that asks for two fields fails. Mark the resolvers and gateways that should stay open with `@SkipTurnstile()`. In gateways, the options get the socket instead of the request, as [WebSocket gateways](#websocket-gateways) explains.
 
 Routes can keep `@TurnstileCaptcha()` for its options, such as `action` or `widget`. The global guard applies them, and the token is still checked once per call.
 

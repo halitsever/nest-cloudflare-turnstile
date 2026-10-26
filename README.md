@@ -111,7 +111,7 @@ TurnstileModule.forRoot({
 - [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, a global guard, several widgets, the verification result, GraphQL, WebSockets and manual checks
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
 - [Migrating from @nestlab/google-recaptcha](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha)
-- [Basic example](./examples/basic): a runnable app with Cloudflare's test keys, also [on StackBlitz](https://stackblitz.com/github/halitsever/nest-cloudflare-turnstile/tree/main/examples/basic)
+- [Basic example](./examples/basic): a runnable app with Cloudflare's test keys
 
 <p align="center">
   <a href="https://github.com/halitsever/nest-cloudflare-turnstile/issues"><img src="https://halitsever-api.vercel.app/api/issue" alt="Issues" /></a>
