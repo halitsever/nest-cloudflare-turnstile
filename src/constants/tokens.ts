@@ -1,4 +1,4 @@
-/** Injection token for the module options. The value is kept from 0.0.x so lookups by string still resolve. */
+/** Injection token for the module options. Apps may inject them by this string, so it must not change. */
 export const TURNSTILE_OPTIONS = 'TurnstileServiceOptions';
 
 export const TURNSTILE_ROUTE_OPTIONS =
