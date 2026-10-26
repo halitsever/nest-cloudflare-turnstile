@@ -13,6 +13,7 @@ import { TurnstileError } from '../errors/turnstile.error';
 import { findWidget } from '../utils/widgets';
 import type {
   ITurnstileOptions,
+  TurnstileVerifyEvent,
   TurnstileVerifyResponse,
   ValidateTokenOptions,
 } from '../interfaces/turnstile';
@@ -27,6 +28,21 @@ const SERVER_ERROR_CODES = [
   'bad-request',
   'internal-error',
 ];
+
+/** A failed exchange keeps Cloudflare's answer, if any, next to the error. */
+type Exchange =
+  | {
+      outcome: 'success' | 'rejected';
+      result: TurnstileVerifyResponse;
+      error?: undefined;
+      attempts: number;
+    }
+  | {
+      outcome: 'failed';
+      result?: TurnstileVerifyResponse;
+      error: TurnstileError;
+      attempts: number;
+    };
 
 @Injectable()
 export class TurnstileService implements OnModuleInit {
@@ -80,39 +96,35 @@ export class TurnstileService implements OnModuleInit {
       remoteip: remoteIp,
       idempotency_key: randomUUID(),
     });
-    const result = await this.post(body);
-    const serverCodes = result.success
-      ? []
-      : (result['error-codes'] ?? []).filter((code) =>
-          SERVER_ERROR_CODES.includes(code),
-        );
-    if (serverCodes.length > 0) {
-      throw this.fail(
-        new TurnstileError('Turnstile siteverify refused the request', {
-          errorCodes: serverCodes,
-        }),
-      );
-    }
-    return result;
+    const started = performance.now();
+    const exchange = await this.post(body);
+    this.notify({
+      ...exchange,
+      widget,
+      durationMs: Math.round(performance.now() - started),
+    });
+    if (exchange.outcome === 'failed') throw this.fail(exchange.error);
+    return exchange.result;
   }
 
   /** Tries twice; the shared idempotency key lets Cloudflare treat the retry as the same check. */
-  private async post(body: string): Promise<TurnstileVerifyResponse> {
-    let failure: unknown;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  private async post(body: string): Promise<Exchange> {
+    let cause: unknown;
+    for (let attempts = 1; attempts <= MAX_ATTEMPTS; attempts++) {
       try {
         const result = await this.request(body);
         const retryable = result['error-codes']?.includes('internal-error');
-        if (!retryable || attempt === MAX_ATTEMPTS) return result;
+        if (!retryable || attempts === MAX_ATTEMPTS) {
+          return classify(result, attempts);
+        }
       } catch (error) {
-        failure = error;
+        cause = error;
       }
     }
-    throw this.fail(
-      new TurnstileError('Turnstile siteverify request failed', {
-        cause: failure,
-      }),
-    );
+    const error = new TurnstileError('Turnstile siteverify request failed', {
+      cause,
+    });
+    return { outcome: 'failed', error, attempts: MAX_ATTEMPTS };
   }
 
   private async request(body: string): Promise<TurnstileVerifyResponse> {
@@ -140,19 +152,49 @@ export class TurnstileService implements OnModuleInit {
   /** Nest does not log HttpExceptions, so without onError a broken setup would fail silently. */
   private report(error: TurnstileError): void {
     const { onError } = this.options;
-    if (!onError) {
-      this.logger.error(describe(error));
-      return;
-    }
+    if (onError) this.runHook('onError', () => onError(error));
+    else this.logger.error(describe(error));
+  }
+
+  private notify(event: TurnstileVerifyEvent): void {
+    const { onVerify, debug } = this.options;
+    if (debug) this.logger.debug(summarize(event));
+    if (onVerify) this.runHook('onVerify', () => onVerify(event));
+  }
+
+  /** A hook that throws or rejects is logged, so it can neither break the check nor leave an unhandled rejection. */
+  private runHook(name: string, hook: () => unknown): void {
     const logFailure = (cause: unknown) =>
-      this.logger.error(`onError failed: ${describe(cause)}`);
+      this.logger.error(`${name} failed: ${describe(cause)}`);
     try {
-      // An async handler that rejects must not turn into an unhandled rejection.
-      Promise.resolve(onError(error)).catch(logFailure);
+      Promise.resolve(hook()).catch(logFailure);
     } catch (cause) {
       logFailure(cause);
     }
   }
+}
+
+function classify(result: TurnstileVerifyResponse, attempts: number): Exchange {
+  if (result.success) return { outcome: 'success', result, attempts };
+  const errorCodes = (result['error-codes'] ?? []).filter((code) =>
+    SERVER_ERROR_CODES.includes(code),
+  );
+  if (errorCodes.length === 0) return { outcome: 'rejected', result, attempts };
+  const error = new TurnstileError('Turnstile siteverify refused the request', {
+    errorCodes,
+  });
+  return { outcome: 'failed', result, error, attempts };
+}
+
+/** Leaves out the token, the secret key and cdata, which can hold a session ID. */
+function summarize(event: TurnstileVerifyEvent): string {
+  const errorCodes = event.result?.['error-codes'] ?? [];
+  const codes = errorCodes.length > 0 ? ` [${errorCodes.join(', ')}]` : '';
+  const widget =
+    event.widget === undefined ? '' : ` for widget "${event.widget}"`;
+  const attempts =
+    event.attempts === 1 ? '1 attempt' : `${event.attempts} attempts`;
+  return `siteverify ${event.outcome}${codes}${widget}: ${attempts}, ${event.durationMs} ms`;
 }
 
 function describe(error: unknown): string {

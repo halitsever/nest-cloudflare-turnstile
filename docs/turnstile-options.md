@@ -15,6 +15,8 @@
 | `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
 | `exceptionFactory` | `(reason, details) => Error`                            | `BadRequestException`                  |
 | `onError`          | `(error: TurnstileError) => void`                       | none                                   |
+| `onVerify`         | `(event: TurnstileVerifyEvent) => void`                 | none                                   |
+| `debug`            | `boolean`                                               | `false`                                |
 | `widgets`          | `Record<string, TurnstileWidgetOptions>`                | none                                   |
 | `isGlobal`         | `boolean`                                               | `true`                                 |
 
@@ -137,6 +139,46 @@ Builds the exception the guard throws for a missing or rejected token. See [Erro
 ## onError
 
 Called with a `TurnstileError` when siteverify cannot be reached or refuses the request itself, for example because of a wrong secret key. The error never contains the secret. When you leave it out, the module logs the error instead. See [Error handling](./error-handling#setup-and-network-errors).
+
+## onVerify
+
+Called after every siteverify check, from the guard or from [`validateToken`](./advanced#verify-a-token-yourself), with Cloudflare's answer and how long it took. Use it for metrics, for example with [prom-client](https://github.com/siimon/prom-client):
+
+```ts
+import { Counter } from 'prom-client';
+
+const checks = new Counter({
+  name: 'turnstile_checks_total',
+  help: 'Turnstile siteverify checks by outcome',
+  labelNames: ['outcome'],
+});
+
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  onVerify: ({ outcome }) => checks.inc({ outcome }),
+});
+```
+
+| Field        | Value                                                                                                           |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `outcome`    | `success` or `rejected` as Cloudflare answered, or `failed` when siteverify gave no answer or blamed your setup |
+| `result`     | Cloudflare's answer. Missing when siteverify could not be reached                                               |
+| `error`      | For failed checks, the `TurnstileError` that `onError` gets                                                     |
+| `widget`     | The name from [`widgets`](#widgets), when the check used one                                                    |
+| `durationMs` | Time spent on siteverify, retry included                                                                        |
+| `attempts`   | `1`, or `2` when the first request failed and was retried                                                       |
+
+The event describes Cloudflare's answer, not the guard's decision. A token Cloudflare accepted counts as `success` even when the hostname or action check or `validateResult` rejects it afterwards. Requests the guard turns away before calling Cloudflare, such as those without a token, produce no event. If `onVerify` throws or returns a rejected promise, the module logs that and the check goes on.
+
+## debug
+
+Logs one line per siteverify check at Nest's debug level:
+
+```text
+DEBUG [TurnstileModule] siteverify rejected [timeout-or-duplicate]: 1 attempt, 84 ms
+```
+
+The line has the outcome, Cloudflare's error codes, the widget name if there is one, the attempts and the duration. It never has the token, the secret key or `cdata`. Nest's default logger prints debug messages. If your app sets its own log levels, include `'debug'`.
 
 ## widgets
 

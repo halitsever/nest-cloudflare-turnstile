@@ -29,6 +29,7 @@
 - No runtime dependencies besides Nest itself
 - Hostname and action checks, as Cloudflare recommends
 - Several widgets in one app, each with its own secret key
+- An `onVerify` hook for metrics, and debug logs without tokens or secrets
 - One safe retry when siteverify fails, and errors that never contain your secret key
 
 <p align="center">

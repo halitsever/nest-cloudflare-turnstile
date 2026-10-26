@@ -45,6 +45,10 @@ export interface ITurnstileOptions {
   ) => Error;
   /** Called when siteverify cannot be reached or refuses the request itself. The guard then answers 500. */
   onError?: (error: TurnstileError) => void;
+  /** Called after each siteverify check with Cloudflare's answer and the timing, for metrics or logs. */
+  onVerify?: (event: TurnstileVerifyEvent) => void;
+  /** Logs each siteverify check at debug level. The token and the secret key never appear in it. */
+  debug?: boolean;
   /** More widgets, each with its own secret key. A route picks one with `@TurnstileCaptcha({ widget })`. */
   widgets?: Record<string, TurnstileWidgetOptions>;
 }
@@ -56,6 +60,22 @@ export interface TurnstileWidgetOptions {
   expectedHostname?: string | string[];
   expectedAction?: string | string[];
   tokenResponse?: (req: any, context: ExecutionContext) => unknown;
+}
+
+/** What `onVerify` gets. It describes Cloudflare's answer, not the guard's final decision. */
+export interface TurnstileVerifyEvent {
+  /** The widget from `widgets` that checked the token. Undefined for the module's own. */
+  widget?: string;
+  /** `failed` when siteverify gave no answer or blamed the setup instead of the visitor. */
+  outcome: 'success' | 'rejected' | 'failed';
+  /** Undefined when siteverify could not be reached. */
+  result?: TurnstileVerifyResponse;
+  /** The error `onError` gets, for failed checks. */
+  error?: TurnstileError;
+  /** Time spent on siteverify, retry included. */
+  durationMs: number;
+  /** Requests sent to siteverify: 1, or 2 after a retry. */
+  attempts: number;
 }
 
 export interface ValidateTokenOptions {
