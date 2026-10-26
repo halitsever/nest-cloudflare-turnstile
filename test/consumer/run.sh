@@ -6,6 +6,7 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 app="$(mktemp -d)"
+trap 'rm -rf "$app"' EXIT
 cd "$app"
 
 npm init -y >/dev/null

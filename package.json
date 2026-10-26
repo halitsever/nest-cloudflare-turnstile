@@ -1,11 +1,39 @@
 {
   "name": "nest-cloudflare-turnstile",
   "version": "0.0.18",
-  "description": "🔥 Cloudflare Turnstile integration for Nest JS",
-  "author": "Halit Sever <halitsever@protonmail.com>",
-  "private": false,
+  "description": "🔥 Cloudflare Turnstile integration for NestJS",
+  "keywords": [
+    "nestjs",
+    "nest",
+    "cloudflare",
+    "turnstile",
+    "captcha",
+    "guard",
+    "bot-protection"
+  ],
+  "homepage": "https://halitsever.github.io/nest-cloudflare-turnstile",
+  "bugs": {
+    "url": "https://github.com/halitsever/nest-cloudflare-turnstile/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halitsever/nest-cloudflare-turnstile.git"
+  },
   "license": "MIT",
+  "author": "Halit Sever <halitsever@protonmail.com>",
+  "type": "commonjs",
   "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc -p tsconfig.build.json",
@@ -24,17 +52,19 @@
     "prepack": "npm run build",
     "release": "changelogen --release"
   },
-  "dependencies": {
-    "@nestjs/common": "^11.1.1",
-    "@nestjs/core": "^11.1.1",
-    "@nestjs/platform-express": "^11.1.1",
-    "reflect-metadata": "^0.2.2"
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0 || ^12.0.0",
+    "@nestjs/core": "^10.0.0 || ^11.0.0 || ^12.0.0",
+    "reflect-metadata": "^0.1.13 || ^0.2.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
-    "@nestjs/platform-fastify": "^11.2.8",
-    "@nestjs/testing": "^11.2.8",
+    "@nestjs/common": "^12.2.0",
+    "@nestjs/core": "^12.2.0",
+    "@nestjs/platform-express": "^12.2.0",
+    "@nestjs/platform-fastify": "^12.2.0",
+    "@nestjs/testing": "^12.2.0",
     "@swc/core": "^1.16.20",
     "@types/node": "^22.20.5",
     "@types/supertest": "^7.2.1",
@@ -47,14 +77,13 @@
     "prettier": "^3.9.10",
     "pretty-quick": "^4.2.2",
     "publint": "^0.3.25",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
     "supertest": "^7.3.1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0",
     "unplugin-swc": "^2.0.0",
-    "vitepress": "^1.6.3",
+    "vitepress": "^1.6.4",
     "vitest": "^5.0.5"
-  },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.41.1"
   }
 }
