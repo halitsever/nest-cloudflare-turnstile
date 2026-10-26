@@ -18,9 +18,11 @@ import type {
   TurnstileCaptchaOptions,
   TurnstileFailureReason,
   TurnstileVerifyResponse,
+  TurnstileWidgetOptions,
 } from '../interfaces/turnstile';
 import { TurnstileService } from '../services/turnstile.service';
 import { getRequest } from '../utils/request';
+import { findWidget } from '../utils/widgets';
 
 // Nest shares one context among a call's guards, so a guarded controller and route verify once,
 // while every GraphQL field resolution gets its own context and needs its own token.
@@ -40,8 +42,11 @@ export class TurnstileGuard implements CanActivate {
 
     if (verifiedCalls.has(context)) return true;
 
+    const widgetName = this.routeOption(context, 'widget');
+    const widget = findWidget(this.options, widgetName);
     const request = getRequest(context);
-    const readToken = this.options.tokenResponse ?? readDefaultToken;
+    const readToken =
+      widget?.tokenResponse ?? this.options.tokenResponse ?? readDefaultToken;
     const token = readToken(request, context);
     if (!token) throw this.reject('missing', []);
     if (typeof token !== 'string' || token.length > MAX_TOKEN_LENGTH) {
@@ -50,6 +55,7 @@ export class TurnstileGuard implements CanActivate {
 
     const result = await this.turnstileService.validateToken(token, {
       remoteIp: this.options.remoteIp?.(request),
+      widget: widgetName,
     });
     if (!result.success) {
       const codes = result['error-codes'] ?? [];
@@ -59,7 +65,7 @@ export class TurnstileGuard implements CanActivate {
       throw this.reject(reason, codes);
     }
 
-    const mismatch = this.findMismatch(result, context);
+    const mismatch = this.findMismatch(result, context, widget);
     if (mismatch) throw this.reject('invalid', [mismatch]);
 
     const { validateResult } = this.options;
@@ -82,30 +88,34 @@ export class TurnstileGuard implements CanActivate {
   private findMismatch(
     result: TurnstileVerifyResponse,
     context: ExecutionContext,
+    widget: TurnstileWidgetOptions | undefined,
   ): string | undefined {
     // Test keys never report the real hostname or action.
     if (result.metadata?.result_with_testing_key) return undefined;
-    if (!matches(this.options.expectedHostname, result.hostname)) {
-      return 'hostname-mismatch';
-    }
-    const action = this.routeAction(context) ?? this.options.expectedAction;
+    const hostname = widget?.expectedHostname ?? this.options.expectedHostname;
+    if (!matches(hostname, result.hostname)) return 'hostname-mismatch';
+    const action =
+      this.routeOption(context, 'action') ??
+      widget?.expectedAction ??
+      this.options.expectedAction;
     if (!matches(action, result.action)) return 'action-mismatch';
     return undefined;
   }
 
-  /** The route's own action wins over its controller's. */
-  private routeAction(
+  /** A route's own setting wins over its controller's. */
+  private routeOption<K extends keyof TurnstileCaptchaOptions>(
     context: ExecutionContext,
-  ): string | string[] | undefined {
+    key: K,
+  ): TurnstileCaptchaOptions[K] | undefined {
     return [context.getHandler(), context.getClass()]
       .map(
         (target) =>
           this.reflector.get<TurnstileCaptchaOptions | undefined>(
             TURNSTILE_ROUTE_OPTIONS,
             target,
-          )?.action,
+          )?.[key],
       )
-      .find((action) => action !== undefined);
+      .find((value) => value !== undefined);
   }
 
   private reject(reason: TurnstileFailureReason, errorCodes: string[]): Error {

@@ -10,6 +10,7 @@ import { SITEVERIFY_URL, TEST_SECRET_KEYS } from '../constants/cloudflare';
 import { Messages } from '../constants/messages';
 import { TURNSTILE_OPTIONS } from '../constants/tokens';
 import { TurnstileError } from '../errors/turnstile.error';
+import { findWidget } from '../utils/widgets';
 import type {
   ITurnstileOptions,
   TurnstileVerifyResponse,
@@ -37,19 +38,30 @@ export class TurnstileService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    const { secretKey, skipIf } = this.options;
-    if (!secretKey && skipIf !== true) {
-      throw new Error(
-        'TurnstileModule needs a secretKey. Set one, or set skipIf: true to turn validation off.',
-      );
-    }
-    if (
-      process.env.NODE_ENV === 'production' &&
-      TEST_SECRET_KEYS.includes(secretKey ?? '')
-    ) {
-      this.logger.warn(
-        'TurnstileModule is using a Cloudflare test secret key in production, so it cannot tell real visitors from bots.',
-      );
+    const { secretKey, skipIf, widgets = {} } = this.options;
+    const secrets: Array<[label: string, secret: string | undefined]> = [
+      ['', secretKey],
+      ...Object.entries(widgets).map(
+        ([name, widget]): [string, string | undefined] => [
+          ` for widget "${name}"`,
+          widget.secretKey,
+        ],
+      ),
+    ];
+    for (const [label, secret] of secrets) {
+      if (!secret && skipIf !== true) {
+        throw new Error(
+          `TurnstileModule needs a secretKey${label}. Set one, or set skipIf: true to turn validation off.`,
+        );
+      }
+      if (
+        process.env.NODE_ENV === 'production' &&
+        TEST_SECRET_KEYS.includes(secret ?? '')
+      ) {
+        this.logger.warn(
+          `TurnstileModule is using a Cloudflare test secret key in production${label}, so it cannot tell real visitors from bots.`,
+        );
+      }
     }
   }
 
@@ -59,10 +71,11 @@ export class TurnstileService implements OnModuleInit {
    */
   async validateToken(
     token: string,
-    { remoteIp }: ValidateTokenOptions = {},
+    { remoteIp, widget }: ValidateTokenOptions = {},
   ): Promise<TurnstileVerifyResponse> {
+    const { secretKey } = findWidget(this.options, widget) ?? this.options;
     const body = JSON.stringify({
-      secret: this.options.secretKey,
+      secret: secretKey,
       response: token,
       remoteip: remoteIp,
       idempotency_key: randomUUID(),

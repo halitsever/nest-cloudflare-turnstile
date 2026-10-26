@@ -15,6 +15,7 @@
 | `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
 | `exceptionFactory` | `(reason, details) => Error`                            | `BadRequestException`                  |
 | `onError`          | `(error: TurnstileError) => void`                       | none                                   |
+| `widgets`          | `Record<string, TurnstileWidgetOptions>`                | none                                   |
 | `isGlobal`         | `boolean`                                               | `true`                                 |
 
 ## secretKey
@@ -136,6 +137,24 @@ Builds the exception the guard throws for a missing or rejected token. See [Erro
 ## onError
 
 Called with a `TurnstileError` when siteverify cannot be reached or refuses the request itself, for example because of a wrong secret key. The error never contains the secret. When you leave it out, the module logs the error instead. See [Error handling](./error-handling#setup-and-network-errors).
+
+## widgets
+
+Adds widgets with their own secret keys, for forms that use a different Cloudflare widget than the rest of the app. A route picks one by name with [`@TurnstileCaptcha({ widget })`](./advanced#several-widgets).
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  widgets: {
+    newsletter: {
+      secretKey: process.env.TURNSTILE_NEWSLETTER_SECRET_KEY,
+      expectedAction: 'subscribe',
+    },
+  },
+});
+```
+
+A widget can also set its own `expectedHostname`, `expectedAction` and `tokenResponse`. Whatever it leaves out comes from the module. At startup, each widget's secret key gets the same checks as `secretKey`.
 
 ## isGlobal
 

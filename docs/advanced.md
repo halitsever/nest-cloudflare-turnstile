@@ -27,6 +27,29 @@ export class AuthController {
 
 The route's action wins over the controller's, and the controller's wins over the module's `expectedAction`. When both the controller and the route carry the decorator, the token is still checked once per call.
 
+## Several widgets
+
+Every Cloudflare widget has its own site key and secret key. When a form uses a different widget than the rest of the app, add it under [`widgets`](./turnstile-options#widgets) and name it on the routes that accept its tokens:
+
+```ts
+@Controller('newsletter')
+@TurnstileCaptcha({ widget: 'newsletter' })
+export class NewsletterController {
+  @Post()
+  subscribe() {}
+}
+```
+
+Routes that name no widget keep using the module's `secretKey`. As with actions, the route's `widget` wins over the controller's, and an action set with the decorator wins over the widget's `expectedAction`.
+
+A route that names a widget missing from `widgets` answers 500 without calling Cloudflare. To check a token for a widget yourself, pass its name to `validateToken`:
+
+```ts
+const result = await this.turnstile.validateToken(token, {
+  widget: 'newsletter',
+});
+```
+
 ## Read the verification result
 
 `@TurnstileResult()` injects what Cloudflare returned for the request, including `hostname`, `action`, `cdata` and `challenge_ts`:
