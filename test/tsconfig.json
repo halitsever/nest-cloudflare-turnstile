@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler"
+  },
+  "include": ["**/*.ts", "../src", "../vitest.config.mts"]
+}
