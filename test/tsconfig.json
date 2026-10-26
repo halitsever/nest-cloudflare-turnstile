@@ -4,5 +4,5 @@
     "module": "preserve",
     "moduleResolution": "bundler"
   },
-  "include": ["**/*.ts", "../src", "../vitest.config.mts"]
+  "include": ["**/*.ts", "../src", "../*.mts"]
 }
