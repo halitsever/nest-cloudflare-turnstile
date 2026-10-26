@@ -67,6 +67,38 @@ class AccountController {
   }
 }
 
+@SkipTurnstile()
+abstract class InternalController {}
+
+@Controller('signup')
+@TurnstileCaptcha()
+class SignupController extends InternalController {
+  @Post()
+  create() {
+    return { ok: true };
+  }
+}
+
+@Controller('ping')
+class PingController extends InternalController {
+  @Post()
+  ping() {
+    return { ok: true };
+  }
+}
+
+@TurnstileCaptcha()
+abstract class GuardedController {}
+
+@Controller('status')
+@SkipTurnstile()
+class StatusController extends GuardedController {
+  @Post()
+  check() {
+    return { ok: true };
+  }
+}
+
 /** Every route sits behind the guard, as with `APP_GUARD` in an app module. */
 async function createGuardedApp(): Promise<INestApplication> {
   const moduleRef = await Test.createTestingModule({
@@ -76,7 +108,7 @@ async function createGuardedApp(): Promise<INestApplication> {
         tokenResponse: (req) => req.body?.token,
       }),
     ],
-    controllers: [FormsController, HealthController],
+    controllers: [FormsController, HealthController, PingController],
     providers: [{ provide: APP_GUARD, useClass: TurnstileGuard }],
   }).compile();
   const app = moduleRef.createNestApplication({ logger: false });
@@ -147,6 +179,30 @@ describe('SkipTurnstile', () => {
       .send({ token: 'token-from-widget' });
 
     expect(res.status).toBe(400);
+  });
+
+  it('lets a controller inherit the mark from its parent class', async () => {
+    app = await createGuardedApp();
+
+    const res = await request(app.getHttpServer()).post('/ping');
+
+    expect(res.status).toBe(201);
+  });
+
+  it('guards a controller that asks for Turnstile when its parent class is marked', async () => {
+    app = await createApp('express', {}, [SignupController]);
+
+    const res = await request(app.getHttpServer()).post('/signup');
+
+    expect(res.status).toBe(400);
+  });
+
+  it('exempts a marked controller whose parent class asks for Turnstile', async () => {
+    app = await createApp('express', {}, [StatusController]);
+
+    const res = await request(app.getHttpServer()).post('/status');
+
+    expect(res.status).toBe(201);
   });
 
   it('exempts a route from the guard of its controller', async () => {

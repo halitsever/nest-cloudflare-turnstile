@@ -90,11 +90,12 @@ export class TurnstileGuard implements CanActivate {
       : skipIf === true;
   }
 
-  /** The closest decorator wins, so `@TurnstileCaptcha()` on a route beats `@SkipTurnstile()` on its controller. */
+  /** The closest decorator wins. Each class is read on its own, so a parent's skip never hides a child's guard. */
   private isExempt(context: ExecutionContext): boolean {
-    for (const target of [context.getHandler(), context.getClass()]) {
-      if (this.reflector.get(TURNSTILE_SKIP, target)) return true;
-      if (this.reflector.get(TURNSTILE_ROUTE_OPTIONS, target)) return false;
+    const targets = [context.getHandler(), ...classChain(context.getClass())];
+    for (const target of targets) {
+      if (Reflect.getOwnMetadata(TURNSTILE_SKIP, target)) return true;
+      if (Reflect.getOwnMetadata(TURNSTILE_ROUTE_OPTIONS, target)) return false;
     }
     return false;
   }
@@ -159,6 +160,17 @@ function loadWsException(): (new (error: string) => Error) | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** A class and its parents, nearest first. */
+function classChain(target: object): object[] {
+  const chain: object[] = [];
+  let current: object | null = target;
+  while (current !== null && current !== Function.prototype) {
+    chain.push(current);
+    current = Object.getPrototypeOf(current);
+  }
+  return chain;
 }
 
 function readDefaultToken(req: any, context: ExecutionContext): unknown {
