@@ -22,9 +22,13 @@ class LoginController {
   login() {
     return { ok: true };
   }
+}
 
-  @Post('any-action')
-  anyAction() {
+@Controller('signup')
+@TurnstileCaptcha({ action: 'signup' })
+class SignupController {
+  @Post()
+  create() {
     return { ok: true };
   }
 }
@@ -100,6 +104,29 @@ describe('security checks', () => {
 
     const res = await request(app.getHttpServer())
       .post('/login')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.status).toBe(201);
+  });
+
+  it("applies the controller's action to routes without their own", async () => {
+    siteverifyReplies({ body: verified });
+    app = await createApp('express', { exceptionFactory }, [SignupController]);
+
+    const res = await request(app.getHttpServer())
+      .post('/signup')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.errorCodes).toEqual(['action-mismatch']);
+  });
+
+  it("accepts a token whose action matches the controller's", async () => {
+    siteverifyReplies({ body: { ...verified, action: 'signup' } });
+    app = await createApp('express', {}, [SignupController]);
+
+    const res = await request(app.getHttpServer())
+      .post('/signup')
       .send({ token: 'token-from-widget' });
 
     expect(res.status).toBe(201);
