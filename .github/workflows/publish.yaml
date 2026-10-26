@@ -16,11 +16,21 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          # Node 24 ships npm 11.5.1 or newer, which trusted publishing requires.
+          # Current Node 24 releases ship npm 11.5.1 or newer, which trusted publishing requires.
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
       - run: npm ci
+      # A release cut from an unbumped commit would otherwise publish under the old version.
+      - name: Check that the tag matches package.json
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $version."
+            exit 1
+          fi
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm test
+      - run: npm run lint:package
       - run: npm publish
