@@ -109,7 +109,10 @@ describe('verifySecretOnStartup', () => {
     const moduleRef = await compile({ verifySecretOnStartup: true });
 
     await expect(moduleRef.init()).resolves.toBeDefined();
-    expect(siteverifyRequests[0].secret).toBe('test-secret-key');
+    expect(siteverifyRequests[0]).toMatchObject({
+      secret: 'test-secret-key',
+      response: 'XXXX.DUMMY.TOKEN.XXXX',
+    });
   });
 
   it('checks the secret key of every widget', async () => {

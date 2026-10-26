@@ -63,6 +63,16 @@ class SubscribeController {
   }
 }
 
+@Controller('mixed')
+@TurnstileCaptcha({ widget: 'newsletter' })
+class MixedController {
+  @Post()
+  @TurnstileCaptcha({ widget: 'partner' })
+  create() {
+    return { ok: true };
+  }
+}
+
 const widgetOptions: Partial<ITurnstileOptions> = {
   widgets: {
     newsletter: { secretKey: 'newsletter-secret', expectedAction: 'subscribe' },
@@ -119,6 +129,17 @@ describe('widgets', () => {
     expect(siteverifyRequests[0].secret).toBe('newsletter-secret');
   });
 
+  it('lets a route pick another widget than its controller', async () => {
+    siteverifyReplies({ body: { ...verified, hostname: 'partner.example' } });
+    app = await createApp('express', widgetOptions, [MixedController]);
+
+    await request(app.getHttpServer())
+      .post('/mixed')
+      .set('x-partner-token', 'token-from-header');
+
+    expect(siteverifyRequests[0].secret).toBe('partner-secret');
+  });
+
   it("checks tokens against the widget's action", async () => {
     siteverifyReplies({ body: verified });
 
@@ -157,6 +178,36 @@ describe('widgets', () => {
       .set('x-partner-token', 'token-from-header');
 
     expect(res.body.errorCodes).toEqual(['hostname-mismatch']);
+  });
+
+  it("falls back to the module's hostname for a widget without one", async () => {
+    siteverifyReplies({ body: { ...verified, action: 'subscribe' } });
+    app = await createApp(
+      'express',
+      { ...widgetOptions, expectedHostname: 'shop.example' },
+      [FormsController],
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/forms/newsletter')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.body.errorCodes).toEqual(['hostname-mismatch']);
+  });
+
+  it("falls back to the module's action for a widget without one", async () => {
+    siteverifyReplies({ body: { ...verified, hostname: 'partner.example' } });
+    app = await createApp(
+      'express',
+      { ...widgetOptions, expectedAction: 'checkout' },
+      [FormsController],
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/forms/partner')
+      .set('x-partner-token', 'token-from-header');
+
+    expect(res.body.errorCodes).toEqual(['action-mismatch']);
   });
 
   it('answers 500 without calling Cloudflare for an unknown widget', async () => {
