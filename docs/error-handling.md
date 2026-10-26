@@ -65,4 +65,6 @@ TurnstileModule.forRoot({
 
 `error.errorCodes` lists the Cloudflare codes and is empty for network failures, where `error.cause` holds the original error. The error never contains your secret key.
 
+Without `onError`, the module logs these errors with Nest's `Logger` under the `TurnstileModule` context, because Nest does not log 500 responses that come from an `HttpException`. If `onError` throws or returns a rejected promise, the module logs that too and the request still gets the 500.
+
 `exceptionFactory` is not used for these cases, because they are not the visitor's fault.

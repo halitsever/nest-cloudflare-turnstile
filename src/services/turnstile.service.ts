@@ -117,7 +117,34 @@ export class TurnstileService implements OnModuleInit {
   }
 
   private fail(error: TurnstileError): InternalServerErrorException {
-    this.options.onError?.(error);
+    this.report(error);
     return new InternalServerErrorException(Messages.FAIL);
   }
+
+  /** Nest does not log HttpExceptions, so without onError a broken setup would fail silently. */
+  private report(error: TurnstileError): void {
+    const { onError } = this.options;
+    if (!onError) {
+      this.logger.error(describe(error));
+      return;
+    }
+    const logFailure = (cause: unknown) =>
+      this.logger.error(`onError failed: ${describe(cause)}`);
+    try {
+      // An async handler that rejects must not turn into an unhandled rejection.
+      Promise.resolve(onError(error)).catch(logFailure);
+    } catch (cause) {
+      logFailure(cause);
+    }
+  }
+}
+
+function describe(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const codes =
+    error instanceof TurnstileError && error.errorCodes.length > 0
+      ? ` [${error.errorCodes.join(', ')}]`
+      : '';
+  const cause = error.cause instanceof Error ? `: ${error.cause.message}` : '';
+  return `${error.message}${codes}${cause}`;
 }

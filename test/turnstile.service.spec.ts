@@ -1,7 +1,7 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { inspect } from 'node:util';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ITurnstileOptions,
   TurnstileError,
@@ -37,6 +37,10 @@ async function createService(
 }
 
 describe('TurnstileService.validateToken', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("returns Cloudflare's verdict for an accepted token", async () => {
     siteverifyReplies({ body: verified });
     const service = await createService();
@@ -212,6 +216,77 @@ describe('TurnstileService.validateToken', () => {
 
     expect(inspect(onError.mock.calls[0][0], { depth: null })).not.toContain(
       SECRET,
+    );
+  });
+
+  it('keeps the secret key out of the error after a network failure', async () => {
+    siteverifyReplies('network-error');
+    const onError = vi.fn();
+    const service = await createService({ onError });
+
+    await service.validateToken('token-from-widget').catch(() => undefined);
+
+    expect(inspect(onError.mock.calls[0][0], { depth: null })).not.toContain(
+      SECRET,
+    );
+  });
+
+  it('logs setup errors when onError is not set', async () => {
+    siteverifyReplies({ status: 400, body: wrongSecret });
+    const logError = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => {});
+    const service = await createService();
+
+    await service.validateToken('token-from-widget').catch(() => undefined);
+
+    expect(logError).toHaveBeenCalledOnce();
+    expect(logError.mock.calls[0][0]).toContain('invalid-input-secret');
+    expect(logError.mock.calls[0][0]).not.toContain(SECRET);
+  });
+
+  it('leaves setup errors to onError when it is set', async () => {
+    siteverifyReplies({ status: 400, body: wrongSecret });
+    const logError = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => {});
+    const service = await createService({ onError: () => {} });
+
+    await service.validateToken('token-from-widget').catch(() => undefined);
+
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it('still answers 500 when onError throws', async () => {
+    siteverifyReplies({ status: 400, body: wrongSecret });
+    vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    const service = await createService({
+      onError: () => {
+        throw new Error('reporting is down');
+      },
+    });
+
+    await expect(service.validateToken('token-from-widget')).rejects.toThrow(
+      InternalServerErrorException,
+    );
+  });
+
+  it('logs an async onError that rejects instead of leaving it unhandled', async () => {
+    siteverifyReplies({ status: 400, body: wrongSecret });
+    const logError = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => {});
+    const service = await createService({
+      onError: async () => {
+        throw new Error('reporting is down');
+      },
+    });
+
+    await service.validateToken('token-from-widget').catch(() => undefined);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(logError).toHaveBeenCalledWith(
+      expect.stringContaining('reporting is down'),
     );
   });
 });

@@ -88,7 +88,7 @@ Builds the exception the guard throws for a missing or rejected token. See [Erro
 
 ## onError
 
-Called with a `TurnstileError` when siteverify cannot be reached or refuses the request itself, for example because of a wrong secret key. The error never contains the secret. See [Error handling](./error-handling#setup-and-network-errors).
+Called with a `TurnstileError` when siteverify cannot be reached or refuses the request itself, for example because of a wrong secret key. The error never contains the secret. When you leave it out, the module logs the error instead. See [Error handling](./error-handling#setup-and-network-errors).
 
 ## isGlobal
 
