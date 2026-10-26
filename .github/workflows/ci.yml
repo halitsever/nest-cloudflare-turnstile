@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # A weekly run catches Cloudflare API changes and new Nest releases between commits.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, build and pack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run lint:package
+      - run: npm pack
+      - run: npm run docs:build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: nest-cloudflare-turnstile-*.tgz
+          if-no-files-found: error
+
+  test:
+    name: Test (Node ${{ matrix.node }}, Nest ${{ matrix.nest }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24, 26]
+        nest: [12]
+        include:
+          - node: 22
+            nest: 10
+          - node: 22
+            nest: 11
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - name: Install Nest ${{ matrix.nest }}
+        run: >-
+          npm install --no-save --no-audit --no-fund
+          @nestjs/common@${{ matrix.nest }}
+          @nestjs/core@${{ matrix.nest }}
+          @nestjs/platform-express@${{ matrix.nest }}
+          @nestjs/platform-fastify@${{ matrix.nest }}
+          @nestjs/testing@${{ matrix.nest }}
+      - run: npm test
+
+  live:
+    name: Live siteverify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:live
+
+  consumer:
+    name: Consumer app (Node ${{ matrix.node }}, Nest ${{ matrix.nest }})
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { node: 20, nest: 10 }
+          - { node: 20, nest: 11 }
+          - { node: 20, nest: 12 }
+          - { node: 24, nest: 12 }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: package
+          path: package
+      - run: test/consumer/run.sh ${{ matrix.nest }} "$(ls "$PWD"/package/*.tgz)"
