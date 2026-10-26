@@ -1,130 +1,112 @@
-<p align="center" class="logo-section">
-<img src="https://i.ibb.co/HT1M4Kb/image.png" height="80" width="80"/>
-</br>
-<img src="https://halitsever-api.vercel.app/api/repo-title?title=Cloudflare%20Turnstile%20NestJS">
+<p align="center">
+  <img src="https://i.ibb.co/HT1M4Kb/image.png" height="80" width="80" alt="Cloud logo" />
+</p>
+
+<h1 align="center">Cloudflare Turnstile for NestJS</h1>
 
 <p align="center">
-☁️ Cloudflare Turnstile integration for NestJS<br>
-<br/>
-<br/>
-<img src="https://img.shields.io/github/sponsors/halitsever"/>
-</p>
-<p align="center">
-<a align="center" href="https://halitsever.github.io/nest-cloudflare-turnstile">Documentation</a>
-  </p>
+  ☁️ A guard that checks <a href="https://developers.cloudflare.com/turnstile/">Cloudflare Turnstile</a> tokens before your NestJS handlers run.
 </p>
 
 <p align="center">
-<img src="https://halitsever-api.vercel.app/api/details"/>
+  <a href="https://www.npmjs.com/package/nest-cloudflare-turnstile"><img src="https://img.shields.io/npm/v/nest-cloudflare-turnstile" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/nest-cloudflare-turnstile"><img src="https://img.shields.io/npm/dm/nest-cloudflare-turnstile" alt="npm downloads" /></a>
+  <a href="https://github.com/halitsever/nest-cloudflare-turnstile/actions/workflows/ci.yml"><img src="https://github.com/halitsever/nest-cloudflare-turnstile/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/npm/l/nest-cloudflare-turnstile" alt="MIT license" /></a>
+  <a href="https://github.com/sponsors/halitsever"><img src="https://img.shields.io/github/sponsors/halitsever" alt="GitHub sponsors" /></a>
 </p>
 
-- 🧩 [**Simple and easy**](#) - This library provides just one guard to protect your endpoints with Cloudflare Turnstile Captcha!
-
-<p align="center" >
-<img src="https://halitsever-api.vercel.app/api/installation"/>
+<p align="center">
+  <a href="https://halitsever.github.io/nest-cloudflare-turnstile">Documentation</a>
 </p>
 
-Installation:
+## Features
+
+- One decorator for a route or a whole controller
+- NestJS 10, 11 and 12, on Express or Fastify, including GraphQL resolvers
+- No runtime dependencies besides Nest itself
+- Hostname and action checks, as Cloudflare recommends
+- One safe retry when siteverify fails, and errors that never contain your secret key
+
+## Install
 
 ```bash
-npm install nest-cloudflare-turnstile --save
+npm install nest-cloudflare-turnstile
 ```
 
-add module to imports array with forRoot method:
+The package needs Node.js 20 or later.
 
-```javascript
+## Quick start
 
-  imports: [TurnstileModule.forRoot({
-    secretKey: '1x0000000000000000000000000000000AA',
-    tokenResponse: (req) => req.body?.turnstileToken // or you can use req.headers.turnstileToken
-  })],
+Register the module with the secret key of your widget:
 
-```
+```ts
+import { Module } from '@nestjs/common';
+import { TurnstileModule } from 'nest-cloudflare-turnstile';
 
-or with forRootAsync method:
-
-```javascript
- imports: [
-    TurnstileModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const secretKey = config.get<string>(
-          'CLOUDFLARE_TURNSTILE_PRIVATE_KEY',
-        );
-        if (!secretKey) {
-          throw new Error('Missing Cloudflare Turnstile secret');
-        }
-
-        return {
-          secretKey,
-          tokenResponse: (req) => req.body?.turnstileToken,
-        };
-      },
+@Module({
+  imports: [
+    TurnstileModule.forRoot({
+      secretKey: process.env.TURNSTILE_SECRET_KEY,
     }),
-  ]
+  ],
+})
+export class AppModule {}
 ```
 
-use `TurnstileCaptcha` decorator on controller:
+Then protect a route:
 
-```javascript
+```ts
+import { Controller, Post } from '@nestjs/common';
+import { TurnstileCaptcha } from 'nest-cloudflare-turnstile';
 
-  import { TurnstileCaptcha } from 'nest-cloudflare-turnstile'
-
-  @Post()
+@Controller('auth')
+export class AuthController {
+  @Post('login')
   @TurnstileCaptcha()
-  getHello(): string {
-    return this.appService.getHello();
+  login() {
+    // Runs only after Cloudflare accepted the token.
   }
+}
 ```
 
-### skipIf
+The guard reads the token from the `cf-turnstile-response` field that the widget adds to forms, or from a header with the same name. A request without a token gets a 400, and so does a request whose token Cloudflare rejects.
 
-Use `skipIf` to bypass Turnstile validation conditionally. Useful for development or test environments:
+## Common options
 
-```javascript
-imports: [TurnstileModule.forRoot({
-  secretKey: '1x0000000000000000000000000000000AA',
-  tokenResponse: (req) => req.body?.turnstileToken,
-  skipIf: process.env.NODE_ENV === 'development',
-})],
-```
-
-### exceptionFactory
-
-Use `exceptionFactory` to customize the exception thrown on validation failure. The factory receives `'missing'` or `'invalid'` as the reason:
-
-```javascript
+```ts
 import { UnauthorizedException } from '@nestjs/common';
 
-imports: [TurnstileModule.forRoot({
-  secretKey: '1x0000000000000000000000000000000AA',
-  tokenResponse: (req) => req.body?.turnstileToken,
-  exceptionFactory: (reason) => {
-    if (reason === 'missing') {
-      return new UnauthorizedException('Turnstile token is required.');
-    }
-    return new UnauthorizedException('Turnstile token is invalid.');
-  },
-})],
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  // Read the token from somewhere else.
+  tokenResponse: (req) => req.body?.captcha,
+  // Reject tokens solved on other sites.
+  expectedHostname: 'example.com',
+  // Let requests through in tests.
+  skipIf: process.env.NODE_ENV === 'test',
+  // Throw your own exception for missing or rejected tokens.
+  exceptionFactory: (reason, { errorCodes }) =>
+    new UnauthorizedException({ reason, errorCodes }),
+});
 ```
 
-Without `exceptionFactory`, the guard throws a `BadRequestException` by default.
+> [!WARNING]
+> `1x0000000000000000000000000000000AA` is Cloudflare's always-passes test secret. In production it lets every request with a token through, so the module logs a warning when it runs with `NODE_ENV=production`.
 
-And thats it! For more information, please check the <a href="https://halitsever.github.io/nest-cloudflare-turnstile">docs</a>
+## Documentation
 
-<p align="center" href="https://github.com/halitsever/repo_name/issues">
-<img src="https://halitsever-api.vercel.app/api/issue"/>
-</p>
+- [Get started](https://halitsever.github.io/nest-cloudflare-turnstile/get-started): module setup and sending the token from the browser
+- [Options](https://halitsever.github.io/nest-cloudflare-turnstile/turnstile-options): every option with its default
+- [Error handling](https://halitsever.github.io/nest-cloudflare-turnstile/error-handling): responses, custom exceptions and `onError`
+- [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing): `skipIf` and Cloudflare's test keys
+- [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, the verification result, GraphQL and manual checks
+- [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
 
-<p align="center">
-<img src="https://halitsever-api.vercel.app/api/sponsor"/>
-</p>
+## Contributing
 
-<p align="center">
-<img src="https://halitsever-api.vercel.app/api/license"/>
-</p>
+Issues and pull requests are welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) explains the setup, and [SECURITY.md](./SECURITY.md) explains how to report a vulnerability privately.
 
-<p align="center">
-  MIT LICENSE | <a href="https://halit.org">Halit Sever</a>
-</p>
+## License
+
+MIT © [Halit Sever](https://halit.org)
