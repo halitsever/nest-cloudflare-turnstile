@@ -13,6 +13,33 @@ TurnstileModule.forRoot({
 
 With `skipIf: true` the module also starts without a secret key, so test environments do not need one.
 
+## Stub the service
+
+To test how your app handles a passed or a rejected token, replace `TurnstileService` with `createTurnstileServiceStub`. It answers every token without a network call, the same way Cloudflare's test keys do:
+
+```ts
+import { Test } from '@nestjs/testing';
+import {
+  createTurnstileServiceStub,
+  TurnstileService,
+} from 'nest-cloudflare-turnstile';
+import { AppModule } from '../src/app.module';
+
+const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+  .overrideProvider(TurnstileService)
+  .useValue(createTurnstileServiceStub('fail'))
+  .compile();
+```
+
+| Verdict            | Answer                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `'pass'` (default) | Accepts every token. The hostname and action checks are skipped, as with test keys.   |
+| `'fail'`           | Rejects the token with `invalid-input-response`                                       |
+| `'spent'`          | Rejects the token with `timeout-or-duplicate`                                         |
+| an object          | Returns that verdict as is, for example to test `action`, `cdata` or `validateResult` |
+
+The rest of the module stays real, so `exceptionFactory`, `validateResult` and `@TurnstileResult()` behave as they do in production. The stub replaces the service that checks the secret key at start-up, so the test module starts without one.
+
 ## Cloudflare test keys
 
 Cloudflare publishes keys that skip the real challenge. Pair a test site key in the browser with a test secret key on the server:
