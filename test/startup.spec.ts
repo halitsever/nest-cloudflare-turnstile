@@ -1,7 +1,11 @@
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITurnstileOptions, TurnstileModule } from '../src/main';
+import {
+  ITurnstileOptions,
+  TurnstileModule,
+  TurnstileService,
+} from '../src/main';
 import {
   internalError,
   rejected,
@@ -44,6 +48,13 @@ describe('module startup', () => {
     }).compile();
 
     await expect(moduleRef.init()).rejects.toThrow(/secretKey/);
+  });
+
+  it('throws a missing secret key right away when called directly', async () => {
+    const moduleRef = await compile({ secretKey: '' });
+    const service = moduleRef.get(TurnstileService);
+
+    expect(() => service.onModuleInit()).toThrow(/secretKey/);
   });
 
   it('starts without a secret key when validation is skipped', async () => {

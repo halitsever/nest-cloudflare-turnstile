@@ -59,7 +59,8 @@ export class TurnstileService implements OnModuleInit {
     private readonly options: ITurnstileOptions,
   ) {}
 
-  async onModuleInit(): Promise<void> {
+  /** Setup mistakes throw right away. A promise comes back only while the secrets are checked with Cloudflare. */
+  onModuleInit(): void | Promise<void> {
     const {
       secretKey,
       skipIf,
@@ -91,9 +92,9 @@ export class TurnstileService implements OnModuleInit {
       }
     }
     if (verifySecretOnStartup && skipIf !== true) {
-      await Promise.all(
+      return Promise.all(
         secrets.map(([label, secret]) => this.verifySecret(label, secret)),
-      );
+      ).then(() => undefined);
     }
   }
 

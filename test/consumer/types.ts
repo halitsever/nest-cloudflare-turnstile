@@ -159,6 +159,14 @@ export class GlobalGuardModule {}
 
 export const optionsToken: string = TURNSTILE_OPTIONS;
 
+// An override that returns nothing must still fit the base method.
+@Injectable()
+export class QuietTurnstileService extends TurnstileService {
+  override onModuleInit(): void {
+    void super.onModuleInit();
+  }
+}
+
 const spent: TurnstileStubVerdict = 'spent';
 export const stubs: TurnstileService[] = [
   createTurnstileServiceStub(),
