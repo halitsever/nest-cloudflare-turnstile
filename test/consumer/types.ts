@@ -1,6 +1,12 @@
 // Compiled inside the consumer app against the packed declarations, with the TypeScript of each Nest era.
 import 'reflect-metadata';
-import { Controller, Injectable, Module, Post } from '@nestjs/common';
+import {
+  Controller,
+  Injectable,
+  Module,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {
   ITurnstileOptions,
   TURNSTILE_OPTIONS,
@@ -8,14 +14,15 @@ import {
   TurnstileError,
   TurnstileModule,
   TurnstileOptionsFactory,
+  TurnstileResult,
   TurnstileService,
-  TurnstileVerifyResponse,
+  type TurnstileVerifyResponse,
 } from 'nest-cloudflare-turnstile';
 
 @Injectable()
 class TurnstileConfig implements TurnstileOptionsFactory {
   createTurnstileOptions(): ITurnstileOptions {
-    return { secretKey: 'secret', tokenResponse: (req) => req.body.token };
+    return { secretKey: 'secret', expectedHostname: 'example.com' };
   }
 }
 
@@ -24,10 +31,15 @@ class TurnstileConfig implements TurnstileOptionsFactory {
 export class GuardedController {
   constructor(private readonly turnstile: TurnstileService) {}
 
-  @Post()
-  @TurnstileCaptcha()
-  check(): Promise<TurnstileVerifyResponse> {
-    return this.turnstile.validateToken('token');
+  @Post('login')
+  @TurnstileCaptcha({ action: 'login' })
+  login(@TurnstileResult() result: TurnstileVerifyResponse): string {
+    return result.hostname ?? '';
+  }
+
+  @Post('manual')
+  manual(): Promise<TurnstileVerifyResponse> {
+    return this.turnstile.validateToken('token', { remoteIp: '203.0.113.7' });
   }
 }
 
@@ -35,9 +47,16 @@ export class GuardedController {
   imports: [
     TurnstileModule.forRoot({
       secretKey: 'secret',
-      tokenResponse: (req) => req.body.token,
+      tokenResponse: (req, context) =>
+        context.getType() === 'http' ? req.body.token : undefined,
+      remoteIp: (req) => req.ip,
+      expectedAction: ['login', 'signup'],
+      timeout: 3000,
       isGlobal: false,
-      onError: (error: TurnstileError) => console.error(error.message),
+      skipIf: async (context) => context.getType() === 'rpc',
+      exceptionFactory: (reason, { errorCodes }) =>
+        new UnauthorizedException({ reason, errorCodes }),
+      onError: (error: TurnstileError) => console.error(error.errorCodes),
     }),
   ],
 })
