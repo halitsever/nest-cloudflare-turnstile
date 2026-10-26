@@ -22,6 +22,10 @@ import type {
 import { TurnstileService } from '../services/turnstile.service';
 import { getRequest } from '../utils/request';
 
+// Nest shares one context among a call's guards, so a guarded controller and route verify once,
+// while every GraphQL field resolution gets its own context and needs its own token.
+const verifiedCalls = new WeakSet<ExecutionContext>();
+
 @Injectable()
 export class TurnstileGuard implements CanActivate {
   constructor(
@@ -34,10 +38,9 @@ export class TurnstileGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (await this.shouldSkip(context)) return true;
 
-    const request = getRequest(context);
-    // A controller and its route can both carry the guard, but a token can only be verified once.
-    if (request?.[TURNSTILE_RESULT]) return true;
+    if (verifiedCalls.has(context)) return true;
 
+    const request = getRequest(context);
     const readToken = this.options.tokenResponse ?? readDefaultToken;
     const token = readToken(request, context);
     if (!token) throw this.reject('missing', []);
@@ -59,6 +62,7 @@ export class TurnstileGuard implements CanActivate {
     const mismatch = this.findMismatch(result, context);
     if (mismatch) throw this.reject('invalid', [mismatch]);
 
+    verifiedCalls.add(context);
     if (request) request[TURNSTILE_RESULT] = result;
     return true;
   }

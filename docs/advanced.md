@@ -25,7 +25,7 @@ export class AuthController {
 }
 ```
 
-The route's action wins over the controller's, and the controller's wins over the module's `expectedAction`. A token is checked once per request, even when both the controller and the route carry the decorator.
+The route's action wins over the controller's, and the controller's wins over the module's `expectedAction`. When both the controller and the route carry the decorator, the token is still checked once per call.
 
 ## Read the verification result
 
@@ -89,6 +89,10 @@ export class AuthResolver {
 ```
 
 `tokenResponse` receives the HTTP request as its first argument, and the `ExecutionContext` as its second if you need the GraphQL arguments.
+
+The guard finds the request through the GraphQL context: `req` on Apollo, `reply` on Mercurius. Both drivers put them there by default. If you pass your own `context` factory, keep those fields, or every call is treated as missing a token.
+
+Every guarded field checks its own token, and Cloudflare accepts a token only once. An operation can therefore resolve one guarded field per token. A second guarded field in the same operation, including an alias of the first such as `{ a: login b: login }`, is rejected, so one solved challenge cannot cover a batch of login attempts.
 
 ## Fastify
 

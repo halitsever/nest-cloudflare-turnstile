@@ -3,7 +3,12 @@ import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it } from 'vitest';
-import { TurnstileGuard, TurnstileModule, TurnstileResult } from '../src/main';
+import {
+  TurnstileCaptcha,
+  TurnstileGuard,
+  TurnstileModule,
+  TurnstileResult,
+} from '../src/main';
 import { SECRET } from './helpers/app';
 import {
   siteverifyReplies,
@@ -15,14 +20,27 @@ class Resolver {
   verify() {
     return true;
   }
+
+  @TurnstileCaptcha({ action: 'newsletter' })
+  subscribe() {
+    return true;
+  }
+
+  @TurnstileCaptcha({ action: 'login' })
+  login() {
+    return true;
+  }
 }
 
-/** Builds the context Nest hands to guards for a resolver: (root, args, context, info). */
-function graphqlContext(contextValue: object): ExecutionContextHost {
+/** Builds the context Nest hands to guards for one resolver call: (root, args, context, info). */
+function graphqlContext(
+  contextValue: object,
+  handler: () => unknown = Resolver.prototype.verify,
+): ExecutionContextHost {
   const host = new ExecutionContextHost(
     [undefined, {}, contextValue, {}],
     Resolver,
-    Resolver.prototype.verify,
+    handler,
   );
   host.setType('graphql');
   return host;
@@ -85,6 +103,40 @@ describe('GraphQL resolvers', () => {
 
     await expect(
       guard.canActivate(graphqlContext({ req: headersRequest() })),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('needs a fresh token for every guarded field in one operation', async () => {
+    siteverifyReplies(
+      { body: verified },
+      {
+        body: {
+          success: false,
+          'error-codes': ['timeout-or-duplicate'],
+          messages: [],
+        },
+      },
+    );
+    const guard = await createGuard();
+    const req = headersRequest('token-from-header');
+
+    await guard.canActivate(graphqlContext({ req }));
+    await expect(guard.canActivate(graphqlContext({ req }))).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(siteverifyRequests).toHaveLength(2);
+  });
+
+  it('checks the action of a field even after another field passed', async () => {
+    siteverifyReplies({ body: { ...verified, action: 'newsletter' } });
+    const guard = await createGuard();
+    const req = headersRequest('token-from-header');
+
+    await guard.canActivate(
+      graphqlContext({ req }, Resolver.prototype.subscribe),
+    );
+    await expect(
+      guard.canActivate(graphqlContext({ req }, Resolver.prototype.login)),
     ).rejects.toThrow(BadRequestException);
   });
 
