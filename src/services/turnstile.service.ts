@@ -13,6 +13,7 @@ import { TurnstileError } from '../errors/turnstile.error';
 import type {
   ITurnstileOptions,
   TurnstileVerifyResponse,
+  ValidateTokenOptions,
 } from '../interfaces/turnstile';
 
 const DEFAULT_TIMEOUT_MS = 5_000;
@@ -56,10 +57,14 @@ export class TurnstileService implements OnModuleInit {
    * Asks siteverify about a token. Resolves with the verdict, including rejections;
    * throws a 500 when the request itself fails or Cloudflare blames the setup.
    */
-  async validateToken(token: string): Promise<TurnstileVerifyResponse> {
+  async validateToken(
+    token: string,
+    { remoteIp }: ValidateTokenOptions = {},
+  ): Promise<TurnstileVerifyResponse> {
     const body = JSON.stringify({
       secret: this.options.secretKey,
       response: token,
+      remoteip: remoteIp,
       idempotency_key: randomUUID(),
     });
     const result = await this.post(body);

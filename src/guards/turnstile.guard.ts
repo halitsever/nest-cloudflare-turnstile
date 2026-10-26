@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { MAX_TOKEN_LENGTH } from '../constants/cloudflare';
+import { MAX_TOKEN_LENGTH, TOKEN_FIELD } from '../constants/cloudflare';
 import { Messages } from '../constants/messages';
 import {
   TURNSTILE_OPTIONS,
@@ -31,19 +31,22 @@ export class TurnstileGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (this.options.skipIf === true) return true;
+    if (await this.shouldSkip(context)) return true;
 
     const request = context.switchToHttp().getRequest();
     // A controller and its route can both carry the guard, but a token can only be verified once.
     if (request[TURNSTILE_RESULT]) return true;
 
-    const token: unknown = this.options.tokenResponse(request);
+    const readToken = this.options.tokenResponse ?? readDefaultToken;
+    const token = readToken(request, context);
     if (!token) throw this.reject('missing', []);
     if (typeof token !== 'string' || token.length > MAX_TOKEN_LENGTH) {
       throw this.reject('invalid', []);
     }
 
-    const result = await this.turnstileService.validateToken(token);
+    const result = await this.turnstileService.validateToken(token, {
+      remoteIp: this.options.remoteIp?.(request),
+    });
     if (!result.success) {
       const codes = result['error-codes'] ?? [];
       const reason = codes.includes('missing-input-response')
@@ -57,6 +60,13 @@ export class TurnstileGuard implements CanActivate {
 
     request[TURNSTILE_RESULT] = result;
     return true;
+  }
+
+  private async shouldSkip(context: ExecutionContext): Promise<boolean> {
+    const { skipIf } = this.options;
+    return typeof skipIf === 'function'
+      ? await skipIf(context)
+      : skipIf === true;
   }
 
   private findMismatch(
@@ -96,6 +106,10 @@ export class TurnstileGuard implements CanActivate {
       reason === 'missing' ? Messages.MISSING : Messages.INVALID,
     );
   }
+}
+
+function readDefaultToken(req: any): unknown {
+  return req?.body?.[TOKEN_FIELD] ?? req?.headers?.[TOKEN_FIELD];
 }
 
 function matches(

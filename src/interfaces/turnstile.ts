@@ -1,4 +1,7 @@
-import type { ConfigurableModuleAsyncOptions } from '@nestjs/common';
+import type {
+  ConfigurableModuleAsyncOptions,
+  ExecutionContext,
+} from '@nestjs/common';
 import type { TurnstileError } from '../errors/turnstile.error';
 
 export type TurnstileFailureReason = 'missing' | 'invalid';
@@ -9,20 +12,36 @@ export interface TurnstileFailureDetails {
 }
 
 export interface ITurnstileOptions {
+  /** Secret key of the Turnstile widget, from the Cloudflare dashboard. */
   secretKey: string;
-  tokenResponse: (req: any) => string;
-  onError?: (error: TurnstileError) => void;
-  skipIf?: boolean;
-  exceptionFactory?: (
-    reason: TurnstileFailureReason,
-    details: TurnstileFailureDetails,
-  ) => Error;
-  /** Milliseconds to wait for siteverify. Defaults to 5000. */
-  timeout?: number;
+  /**
+   * Reads the token from the request. Defaults to the `cf-turnstile-response`
+   * body field, which the widget adds to forms, then the header of the same name.
+   */
+  tokenResponse?: (req: any, context: ExecutionContext) => unknown;
+  /** Visitor IP, sent to Cloudflare as `remoteip`. Left out when this returns nothing. */
+  remoteIp?: (req: any) => string | undefined;
   /** Hostnames a token may be issued for. */
   expectedHostname?: string | string[];
   /** Widget actions a token may carry. `@TurnstileCaptcha({ action })` takes precedence. */
   expectedAction?: string | string[];
+  /** Milliseconds to wait for each siteverify attempt. Defaults to 5000. */
+  timeout?: number;
+  /** Lets requests through without a check, for example in tests. */
+  skipIf?:
+    boolean | ((context: ExecutionContext) => boolean | Promise<boolean>);
+  /** Builds the exception for a missing or rejected token. Defaults to `BadRequestException`. */
+  exceptionFactory?: (
+    reason: TurnstileFailureReason,
+    details: TurnstileFailureDetails,
+  ) => Error;
+  /** Called when siteverify cannot be reached or refuses the request itself. The guard then answers 500. */
+  onError?: (error: TurnstileError) => void;
+}
+
+export interface ValidateTokenOptions {
+  /** Visitor IP, sent to Cloudflare as `remoteip`. */
+  remoteIp?: string;
 }
 
 export interface TurnstileCaptchaOptions {

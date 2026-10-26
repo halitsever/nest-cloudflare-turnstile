@@ -70,6 +70,17 @@ describe('TurnstileService.validateToken', () => {
     ]);
   });
 
+  it('sends the visitor IP as remoteip when given one', async () => {
+    siteverifyReplies({ body: verified });
+    const service = await createService();
+
+    await service.validateToken('token-from-widget', {
+      remoteIp: '198.51.100.1',
+    });
+
+    expect(siteverifyRequests[0].remoteip).toBe('198.51.100.1');
+  });
+
   it('uses a new idempotency key for every token', async () => {
     siteverifyReplies({ body: verified });
     const service = await createService();
