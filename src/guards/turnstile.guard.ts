@@ -20,6 +20,7 @@ import type {
   TurnstileVerifyResponse,
 } from '../interfaces/turnstile';
 import { TurnstileService } from '../services/turnstile.service';
+import { getRequest } from '../utils/request';
 
 @Injectable()
 export class TurnstileGuard implements CanActivate {
@@ -33,9 +34,9 @@ export class TurnstileGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (await this.shouldSkip(context)) return true;
 
-    const request = context.switchToHttp().getRequest();
+    const request = getRequest(context);
     // A controller and its route can both carry the guard, but a token can only be verified once.
-    if (request[TURNSTILE_RESULT]) return true;
+    if (request?.[TURNSTILE_RESULT]) return true;
 
     const readToken = this.options.tokenResponse ?? readDefaultToken;
     const token = readToken(request, context);
@@ -58,7 +59,7 @@ export class TurnstileGuard implements CanActivate {
     const mismatch = this.findMismatch(result, context);
     if (mismatch) throw this.reject('invalid', [mismatch]);
 
-    request[TURNSTILE_RESULT] = result;
+    if (request) request[TURNSTILE_RESULT] = result;
     return true;
   }
 
