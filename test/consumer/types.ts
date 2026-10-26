@@ -67,4 +67,12 @@ export class SyncModule {}
 })
 export class AsyncModule {}
 
+// The README example: an environment variable is string | undefined under strict.
+@Module({
+  imports: [
+    TurnstileModule.forRoot({ secretKey: process.env.TURNSTILE_SECRET_KEY }),
+  ],
+})
+export class EnvModule {}
+
 export const optionsToken: string = TURNSTILE_OPTIONS;

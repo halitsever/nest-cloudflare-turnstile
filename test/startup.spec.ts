@@ -27,6 +27,18 @@ describe('module startup', () => {
     await expect(moduleRef.init()).rejects.toThrow(/secretKey/);
   });
 
+  it('refuses to start when the secret comes from an unset variable', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        TurnstileModule.forRoot({
+          secretKey: process.env.TURNSTILE_SECRET_KEY_THAT_IS_NOT_SET,
+        }),
+      ],
+    }).compile();
+
+    await expect(moduleRef.init()).rejects.toThrow(/secretKey/);
+  });
+
   it('starts without a secret key when validation is skipped', async () => {
     const moduleRef = await compile({ secretKey: '', skipIf: true });
 

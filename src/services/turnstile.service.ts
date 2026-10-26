@@ -45,7 +45,7 @@ export class TurnstileService implements OnModuleInit {
     }
     if (
       process.env.NODE_ENV === 'production' &&
-      TEST_SECRET_KEYS.includes(secretKey)
+      TEST_SECRET_KEYS.includes(secretKey ?? '')
     ) {
       this.logger.warn(
         'TurnstileModule is using a Cloudflare test secret key in production, so it cannot tell real visitors from bots.',

@@ -12,8 +12,8 @@ export interface TurnstileFailureDetails {
 }
 
 export interface ITurnstileOptions {
-  /** Secret key of the Turnstile widget, from the Cloudflare dashboard. */
-  secretKey: string;
+  /** Secret key of the Turnstile widget, from the Cloudflare dashboard. The module refuses to start when it is empty. */
+  secretKey: string | undefined;
   /**
    * Reads the token from the request. Defaults to the `cf-turnstile-response`
    * body field, which the widget adds to forms, then the header of the same name.

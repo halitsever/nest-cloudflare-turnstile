@@ -4,7 +4,7 @@
 
 | Option             | Type                                                  | Default                                |
 | ------------------ | ----------------------------------------------------- | -------------------------------------- |
-| `secretKey`        | `string`                                              | required                               |
+| `secretKey`        | `string \| undefined`                                 | required                               |
 | `tokenResponse`    | `(req, context) => unknown`                           | `cf-turnstile-response` body or header |
 | `remoteIp`         | `(req) => string \| undefined`                        | not sent                               |
 | `expectedHostname` | `string \| string[]`                                  | any hostname                           |
