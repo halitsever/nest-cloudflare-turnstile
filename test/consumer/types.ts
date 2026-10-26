@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  createTurnstileServiceStub,
   ITurnstileOptions,
   TURNSTILE_OPTIONS,
   TurnstileCaptcha,
@@ -16,6 +17,7 @@ import {
   TurnstileOptionsFactory,
   TurnstileResult,
   TurnstileService,
+  type TurnstileStubVerdict,
   type TurnstileVerifyResponse,
 } from 'nest-cloudflare-turnstile';
 
@@ -52,6 +54,9 @@ export class GuardedController {
       remoteIp: (req) => req.ip,
       expectedAction: ['login', 'signup'],
       timeout: 3000,
+      fetch: (input, init) => fetch(input, init),
+      validateResult: async (result, req, context) =>
+        context.getType() === 'http' && result.cdata === req.session?.id,
       isGlobal: false,
       skipIf: async (context) => context.getType() === 'rpc',
       exceptionFactory: (reason, { errorCodes }) =>
@@ -76,3 +81,10 @@ export class AsyncModule {}
 export class EnvModule {}
 
 export const optionsToken: string = TURNSTILE_OPTIONS;
+
+const spent: TurnstileStubVerdict = 'spent';
+export const stubs: TurnstileService[] = [
+  createTurnstileServiceStub(),
+  createTurnstileServiceStub(spent),
+  createTurnstileServiceStub({ success: true, 'error-codes': [] }),
+];
