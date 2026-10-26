@@ -12,6 +12,7 @@ import {
   TURNSTILE_OPTIONS,
   TURNSTILE_RESULT,
   TURNSTILE_ROUTE_OPTIONS,
+  TURNSTILE_SKIP,
 } from '../constants/tokens';
 import type {
   ITurnstileOptions,
@@ -79,10 +80,20 @@ export class TurnstileGuard implements CanActivate {
   }
 
   private async shouldSkip(context: ExecutionContext): Promise<boolean> {
+    if (this.isExempt(context)) return true;
     const { skipIf } = this.options;
     return typeof skipIf === 'function'
       ? await skipIf(context)
       : skipIf === true;
+  }
+
+  /** The closest decorator wins, so `@TurnstileCaptcha()` on a route beats `@SkipTurnstile()` on its controller. */
+  private isExempt(context: ExecutionContext): boolean {
+    for (const target of [context.getHandler(), context.getClass()]) {
+      if (this.reflector.get(TURNSTILE_SKIP, target)) return true;
+      if (this.reflector.get(TURNSTILE_ROUTE_OPTIONS, target)) return false;
+    }
+    return false;
   }
 
   private findMismatch(

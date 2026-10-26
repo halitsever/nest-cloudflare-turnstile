@@ -24,7 +24,7 @@
   <img src="https://halitsever-api.vercel.app/api/details" alt="Details" />
 </p>
 
-- One decorator for a route or a whole controller
+- One decorator for a route or a whole controller, or a global guard with `@SkipTurnstile()` for the exceptions
 - NestJS 10, 11 and 12, on Express or Fastify, including GraphQL resolvers
 - No runtime dependencies besides Nest itself
 - Hostname and action checks, as Cloudflare recommends
@@ -107,7 +107,7 @@ TurnstileModule.forRoot({
 - [Options](https://halitsever.github.io/nest-cloudflare-turnstile/turnstile-options): every option with its default
 - [Error handling](https://halitsever.github.io/nest-cloudflare-turnstile/error-handling): responses, custom exceptions and `onError`
 - [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing): `skipIf` and Cloudflare's test keys
-- [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, several widgets, the verification result, GraphQL and manual checks
+- [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, a global guard, several widgets, the verification result, GraphQL and manual checks
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
 
 <p align="center">

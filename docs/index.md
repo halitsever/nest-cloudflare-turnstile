@@ -18,7 +18,7 @@ hero:
 
 features:
   - title: One decorator
-    details: Put @TurnstileCaptcha() on a route or a controller. Requests without a valid token stop at the guard.
+    details: Put @TurnstileCaptcha() on a route or a controller, or guard every route and mark the exceptions with @SkipTurnstile(). Requests without a valid token stop at the guard.
   - title: NestJS 10, 11 and 12
     details: Uses the Nest packages your app already has and adds no runtime dependencies of its own.
   - title: Express, Fastify and GraphQL

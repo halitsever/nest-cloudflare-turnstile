@@ -27,6 +27,42 @@ export class AuthController {
 
 The route's action wins over the controller's, and the controller's wins over the module's `expectedAction`. When both the controller and the route carry the decorator, the token is still checked once per call.
 
+## Protect every route
+
+Register the guard with `APP_GUARD` to require a token on every route, then exempt the routes that must stay open, such as health checks, with `@SkipTurnstile()`:
+
+```ts
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { TurnstileGuard, TurnstileModule } from 'nest-cloudflare-turnstile';
+
+@Module({
+  imports: [
+    TurnstileModule.forRoot({ secretKey: process.env.TURNSTILE_SECRET_KEY }),
+  ],
+  providers: [{ provide: APP_GUARD, useClass: TurnstileGuard }],
+})
+export class AppModule {}
+```
+
+```ts
+import { Controller, Get } from '@nestjs/common';
+import { SkipTurnstile } from 'nest-cloudflare-turnstile';
+
+@Controller('health')
+@SkipTurnstile()
+export class HealthController {
+  @Get()
+  check() {
+    return { status: 'ok' };
+  }
+}
+```
+
+The closest decorator wins. `@TurnstileCaptcha()` on a route still guards it inside a controller marked with `@SkipTurnstile()`, and `@SkipTurnstile()` on a route exempts it from its controller's `@TurnstileCaptcha()`, with or without the global guard.
+
+Routes can keep `@TurnstileCaptcha()` for its options, such as `action` or `widget`. The global guard applies them, and the token is still checked once per call.
+
 ## Several widgets
 
 Every Cloudflare widget has its own site key and secret key. When a form uses a different widget than the rest of the app, add it under [`widgets`](./turnstile-options#widgets) and name it on the routes that accept its tokens:
