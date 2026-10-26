@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { describe, expect, it } from 'vitest';
-import { TurnstileModule } from '../../src/main';
-import { TurnstileService } from '../../src/services/turnstile.service';
+import { TurnstileModule, TurnstileService } from '../../src/main';
 
 const DUMMY_TOKEN = 'XXXX.DUMMY.TOKEN.XXXX';
 

@@ -8,12 +8,13 @@ import {
 import { TurnstileService } from '../services/turnstile.service';
 import type { ITurnstileOptions } from '../interfaces/turnstile';
 import { Messages } from '../constants/messages';
+import { TURNSTILE_OPTIONS } from '../constants/tokens';
 
 @Injectable()
 export class TurnstileGuard implements CanActivate {
   constructor(
     private readonly turnstileService: TurnstileService,
-    @Inject('TurnstileServiceOptions')
+    @Inject(TURNSTILE_OPTIONS)
     private readonly options: ITurnstileOptions,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {

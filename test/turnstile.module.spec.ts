@@ -2,8 +2,11 @@ import { Injectable, INestApplication, Module } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
-import { TurnstileModule } from '../src/main';
-import { TurnstileService } from '../src/services/turnstile.service';
+import {
+  TURNSTILE_OPTIONS,
+  TurnstileModule,
+  TurnstileService,
+} from '../src/main';
 import { ProtectedController } from './helpers/app';
 import {
   siteverifyReplies,
@@ -66,6 +69,21 @@ describe('TurnstileModule', () => {
 
     expect(siteverifyRequests[0]).toMatchObject({
       secret: 'secret-from-store',
+    });
+  });
+
+  it('provides its options under TURNSTILE_OPTIONS', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        TurnstileModule.forRoot({
+          secretKey: 'secret-from-forRoot',
+          tokenResponse: (req) => req.body?.token,
+        }),
+      ],
+    }).compile();
+
+    expect(moduleRef.get(TURNSTILE_OPTIONS)).toMatchObject({
+      secretKey: 'secret-from-forRoot',
     });
   });
 

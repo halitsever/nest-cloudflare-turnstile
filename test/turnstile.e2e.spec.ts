@@ -1,6 +1,12 @@
-import { INestApplication, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  INestApplication,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { TurnstileCaptcha } from '../src/main';
 import { Adapter, createApp, SECRET } from './helpers/app';
 import {
   rejected,
@@ -8,6 +14,20 @@ import {
   siteverifyRequests,
   verified,
 } from './helpers/siteverify';
+
+@Controller('class-guarded')
+@TurnstileCaptcha()
+class ClassGuardedController {
+  @Post('first')
+  first() {
+    return { route: 'first' };
+  }
+
+  @Post('second')
+  second() {
+    return { route: 'second' };
+  }
+}
 
 describe.each<Adapter>(['express', 'fastify'])(
   'guarded route on %s',
@@ -107,6 +127,19 @@ describe.each<Adapter>(['express', 'fastify'])(
 
       expect(res.status).toBe(201);
       expect(siteverifyRequests).toHaveLength(0);
+    });
+
+    it('guards every route of a controller decorated at class level', async () => {
+      app = await createApp(adapter, {}, [ClassGuardedController]);
+
+      const first = await request(app.getHttpServer())
+        .post('/class-guarded/first')
+        .send({});
+      const second = await request(app.getHttpServer())
+        .post('/class-guarded/second')
+        .send({});
+
+      expect([first.status, second.status]).toEqual([400, 400]);
     });
 
     it('answers 500 and calls onError when Cloudflare is unreachable', async () => {

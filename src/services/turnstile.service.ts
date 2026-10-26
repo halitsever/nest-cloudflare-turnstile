@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Messages } from '../constants/messages';
+import { TURNSTILE_OPTIONS } from '../constants/tokens';
 import { TurnstileError } from '../errors/turnstile.error';
 import type {
   ITurnstileOptions,
@@ -17,7 +18,7 @@ const DEFAULT_TIMEOUT_MS = 5_000;
 @Injectable()
 export class TurnstileService {
   constructor(
-    @Inject('TurnstileServiceOptions')
+    @Inject(TURNSTILE_OPTIONS)
     private readonly options: ITurnstileOptions,
   ) {}
 

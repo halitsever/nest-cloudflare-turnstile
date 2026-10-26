@@ -5,8 +5,7 @@ import {
   ITurnstileOptions,
 } from './interfaces/turnstile';
 import { TurnstileGuard } from './guards/turnstile.guard';
-
-const TurnstileServiceOptionsToken = 'TurnstileServiceOptions';
+import { TURNSTILE_OPTIONS } from './constants/tokens';
 
 const providers: Provider[] = [TurnstileGuard, TurnstileService];
 
@@ -15,7 +14,7 @@ const providers: Provider[] = [TurnstileGuard, TurnstileService];
 export class TurnstileModule {
   public static forRoot(options: ITurnstileOptions): DynamicModule {
     const TurnstileModuleOptionsProvider: Provider = {
-      provide: TurnstileServiceOptionsToken,
+      provide: TURNSTILE_OPTIONS,
       useValue: options,
     };
 
@@ -32,7 +31,7 @@ export class TurnstileModule {
     useFactory,
   }: IAsyncTurnstileOptions): DynamicModule {
     const TurnstileModuleOptionsProvider: Provider = {
-      provide: TurnstileServiceOptionsToken,
+      provide: TURNSTILE_OPTIONS,
       inject: inject || [],
       useFactory: useFactory,
     };

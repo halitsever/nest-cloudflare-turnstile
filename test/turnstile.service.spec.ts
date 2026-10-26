@@ -2,8 +2,11 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { inspect } from 'node:util';
 import { describe, expect, it, vi } from 'vitest';
-import { ITurnstileOptions, TurnstileModule } from '../src/main';
-import { TurnstileService } from '../src/services/turnstile.service';
+import {
+  ITurnstileOptions,
+  TurnstileModule,
+  TurnstileService,
+} from '../src/main';
 import { SECRET } from './helpers/app';
 import {
   rejected,
