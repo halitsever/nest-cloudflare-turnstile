@@ -39,7 +39,7 @@
     "build": "npm run clean && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json && tsc -p test/tsconfig.json",
     "lint": "eslint .",
-    "lint:package": "publint && attw --pack .",
+    "lint:package": "npm run build && publint && attw --pack .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
