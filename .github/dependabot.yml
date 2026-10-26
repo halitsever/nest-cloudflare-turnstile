@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Gives the registry a week to pull compromised releases before they reach a PR.
+    cooldown:
+      default-days: 7
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ['*']
