@@ -148,6 +148,62 @@ describe('TurnstileModule', () => {
     expect(siteverifyRequests).toHaveLength(1);
   });
 
+  it('lets feature modules import the bare module next to forRoot', async () => {
+    siteverifyReplies({ body: verified });
+
+    @Module({ imports: [TurnstileModule], controllers: [ProtectedController] })
+    class FeatureModule {}
+
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        TurnstileModule.forRoot({
+          secretKey: 'secret-from-forRoot',
+          tokenResponse: (req) => req.body?.token,
+        }),
+        FeatureModule,
+      ],
+    }).compile();
+    app = moduleRef.createNestApplication({ logger: false });
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post('/protected')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.status).toBe(201);
+  });
+
+  it('shares a non-global setup through a module that re-exports it', async () => {
+    siteverifyReplies({ body: verified });
+
+    @Module({
+      imports: [
+        TurnstileModule.forRoot({
+          secretKey: 'secret-from-forRoot',
+          tokenResponse: (req) => req.body?.token,
+          isGlobal: false,
+        }),
+      ],
+      exports: [TurnstileModule],
+    })
+    class CaptchaModule {}
+
+    @Module({ imports: [CaptchaModule], controllers: [ProtectedController] })
+    class FeatureModule {}
+
+    const moduleRef = await Test.createTestingModule({
+      imports: [FeatureModule],
+    }).compile();
+    app = moduleRef.createNestApplication({ logger: false });
+    await app.init();
+
+    const res = await request(app.getHttpServer())
+      .post('/protected')
+      .send({ token: 'token-from-widget' });
+
+    expect(res.status).toBe(201);
+  });
+
   it('stays out of other modules when isGlobal is false', async () => {
     @Module({ controllers: [ProtectedController] })
     class FeatureModule {}

@@ -92,4 +92,19 @@ Called with a `TurnstileError` when siteverify cannot be reached or refuses the 
 
 ## isGlobal
 
-The module is global by default. Pass `isGlobal: false` to make it visible only to the modules that import it.
+The module is global by default, so every module can use the guard and `TurnstileService`. With `isGlobal: false`, they are available only where the configured module is imported. Configure it once in a shared module that re-exports it:
+
+```ts
+@Module({
+  imports: [
+    TurnstileModule.forRoot({
+      secretKey: process.env.TURNSTILE_SECRET_KEY,
+      isGlobal: false,
+    }),
+  ],
+  exports: [TurnstileModule],
+})
+export class CaptchaModule {}
+```
+
+Then import `CaptchaModule` in each module that uses the guard. Importing the bare `TurnstileModule` class does not bring the configuration along.
