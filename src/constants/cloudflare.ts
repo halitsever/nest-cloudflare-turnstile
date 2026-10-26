@@ -7,6 +7,9 @@ export const TOKEN_FIELD = 'cf-turnstile-response';
 /** Cloudflare caps tokens at this length, so longer ones are rejected without a round trip. */
 export const MAX_TOKEN_LENGTH = 2048;
 
+/** Issued by Cloudflare's test site keys. Real secret keys reject it as a bad token, not as a bad secret. */
+export const DUMMY_TOKEN = 'XXXX.DUMMY.TOKEN.XXXX';
+
 /** Dummy secrets from Cloudflare's testing docs. */
 export const TEST_SECRET_KEYS = [
   '1x0000000000000000000000000000000AA',

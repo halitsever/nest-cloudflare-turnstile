@@ -4,5 +4,7 @@ export const TURNSTILE_OPTIONS = 'TurnstileServiceOptions';
 export const TURNSTILE_ROUTE_OPTIONS =
   'nest-cloudflare-turnstile:route-options';
 
+export const TURNSTILE_SKIP = 'nest-cloudflare-turnstile:skip';
+
 /** Request property that holds the verification result once the guard passes. */
 export const TURNSTILE_RESULT = Symbol.for('nest-cloudflare-turnstile:result');

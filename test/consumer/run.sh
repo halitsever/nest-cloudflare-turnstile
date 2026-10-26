@@ -20,12 +20,13 @@ esac
 npm init -y >/dev/null
 npm install --ignore-scripts --no-audit --no-fund \
   "@nestjs/common@$1" "@nestjs/core@$1" "@nestjs/platform-express@$1" \
+  "@nestjs/websockets@$1" "@nestjs/platform-socket.io@$1" socket.io-client jest@30 \
   reflect-metadata rxjs "typescript@$typescript" @types/node@20 "$2"
 
 copies=$(find node_modules -path '*/@nestjs/common/package.json' | wc -l | tr -d ' ')
 echo "@nestjs/common copies: $copies"
 
-cp "$here/probe.mjs" "$here/app.cjs" "$here/app.mjs" "$here/types.ts" .
+cp "$here/probe.mjs" "$here/app.cjs" "$here/app.mjs" "$here/types.ts" "$here/gateway.test.cjs" .
 status=0
 if npx --no-install tsc --noEmit --strict --skipLibCheck false \
   --experimentalDecorators --emitDecoratorMetadata \
@@ -37,6 +38,11 @@ else
 fi
 node app.cjs || status=1
 node app.mjs || status=1
+# Jest's default CommonJS mode cannot load the ESM-only Nest 12, and Nest 12 apps that
+# run Jest with --experimental-vm-modules can use import() anyway.
+if [ "$1" -lt 12 ]; then
+  npx --no-install jest --ci || status=1
+fi
 if [ "$copies" -ne 1 ]; then
   echo "FAIL expected a single @nestjs/common copy"
   status=1

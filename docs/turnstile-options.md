@@ -2,28 +2,32 @@
 
 `forRoot` takes these options. `forRootAsync` takes the same object from its factory.
 
-| Option             | Type                                                    | Default                                |
-| ------------------ | ------------------------------------------------------- | -------------------------------------- |
-| `secretKey`        | `string \| undefined`                                   | required                               |
-| `tokenResponse`    | `(req, context) => unknown`                             | `cf-turnstile-response` body or header |
-| `remoteIp`         | `(req) => string \| undefined`                          | not sent                               |
-| `expectedHostname` | `string \| string[]`                                    | any hostname                           |
-| `expectedAction`   | `string \| string[]`                                    | any action                             |
-| `validateResult`   | `(result, req, context) => boolean \| Promise<boolean>` | none                                   |
-| `timeout`          | `number`                                                | `5000`                                 |
-| `fetch`            | `typeof fetch`                                          | the global `fetch`                     |
-| `skipIf`           | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
-| `exceptionFactory` | `(reason, details) => Error`                            | `BadRequestException`                  |
-| `onError`          | `(error: TurnstileError) => void`                       | none                                   |
-| `isGlobal`         | `boolean`                                               | `true`                                 |
+| Option                  | Type                                                    | Default                                                     |
+| ----------------------- | ------------------------------------------------------- | ----------------------------------------------------------- |
+| `secretKey`             | `string \| undefined`                                   | required                                                    |
+| `tokenResponse`         | `(req, context) => unknown`                             | `cf-turnstile-response` body field, header or message field |
+| `remoteIp`              | `(req) => string \| undefined`                          | not sent                                                    |
+| `expectedHostname`      | `string \| string[]`                                    | any hostname                                                |
+| `expectedAction`        | `string \| string[]`                                    | any action                                                  |
+| `validateResult`        | `(result, req, context) => boolean \| Promise<boolean>` | none                                                        |
+| `timeout`               | `number`                                                | `5000`                                                      |
+| `fetch`                 | `typeof fetch`                                          | the global `fetch`                                          |
+| `skipIf`                | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                                     |
+| `exceptionFactory`      | `(reason, details, context) => Error`                   | `BadRequestException`, or `WsException` in gateways         |
+| `onError`               | `(error: TurnstileError) => void`                       | none                                                        |
+| `onVerify`              | `(event: TurnstileVerifyEvent) => void`                 | none                                                        |
+| `debug`                 | `boolean`                                               | `false`                                                     |
+| `widgets`               | `Record<string, TurnstileWidgetOptions>`                | none                                                        |
+| `verifySecretOnStartup` | `boolean`                                               | `false`                                                     |
+| `isGlobal`              | `boolean`                                               | `true`                                                      |
 
 ## secretKey
 
-The secret key of your widget, from the Cloudflare dashboard. Keep it on the server. The module refuses to start without one unless `skipIf` is `true`, and it logs a warning when one of [Cloudflare's test keys](./testing#cloudflare-test-keys) runs with `NODE_ENV=production`.
+The secret key of your widget, from the Cloudflare dashboard. Keep it on the server. The module refuses to start without one unless `skipIf` is `true`, and it logs a warning when one of [Cloudflare's test keys](./testing#cloudflare-test-keys) runs with `NODE_ENV=production`. To also catch a wrong key at startup, turn on [`verifySecretOnStartup`](#verifysecretonstartup).
 
 ## tokenResponse
 
-Reads the token from the request. The second argument is Nest's `ExecutionContext`. When you leave it out, the guard reads the `cf-turnstile-response` body field that the widget adds to forms, then a header with the same name.
+Reads the token from the request. The second argument is Nest's `ExecutionContext`. When you leave it out, the guard reads the `cf-turnstile-response` body field that the widget adds to forms, then a header with the same name. In [WebSocket gateways](./advanced#websocket-gateways), it reads that field from the message.
 
 ```ts
 TurnstileModule.forRoot({
@@ -83,7 +87,7 @@ TurnstileModule.forRoot({
 });
 ```
 
-A token solved in someone else's session then fails, even though Cloudflare accepted it. The function can be async, and its third argument is the `ExecutionContext`.
+A token solved in someone else's session then fails, even though Cloudflare accepted it. `data-cdata` takes up to 255 letters, digits, `_` and `-`, so encode a session ID that has other characters. The function can be async, and its third argument is the `ExecutionContext`.
 
 ## timeout
 
@@ -131,11 +135,84 @@ Base the decision only on data your server set, such as the user an authenticati
 
 ## exceptionFactory
 
-Builds the exception the guard throws for a missing or rejected token. See [Error handling](./error-handling#custom-exceptions).
+Builds the exception the guard throws for a missing or rejected token. Its third argument is the `ExecutionContext`, which tells HTTP routes and WebSocket gateways apart. See [Error handling](./error-handling#custom-exceptions).
 
 ## onError
 
 Called with a `TurnstileError` when siteverify cannot be reached or refuses the request itself, for example because of a wrong secret key. The error never contains the secret. When you leave it out, the module logs the error instead. See [Error handling](./error-handling#setup-and-network-errors).
+
+## onVerify
+
+Called after every siteverify check, from the guard or from [`validateToken`](./advanced#verify-a-token-yourself), with Cloudflare's answer and how long it took. Use it for metrics, for example with [prom-client](https://github.com/siimon/prom-client):
+
+```ts
+import { Counter } from 'prom-client';
+
+const checks = new Counter({
+  name: 'turnstile_checks_total',
+  help: 'Turnstile siteverify checks by outcome',
+  labelNames: ['outcome'],
+});
+
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  onVerify: ({ outcome }) => checks.inc({ outcome }),
+});
+```
+
+| Field        | Value                                                                                                           |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `outcome`    | `success` or `rejected` as Cloudflare answered, or `failed` when siteverify gave no answer or blamed your setup |
+| `result`     | Cloudflare's answer. Missing when siteverify could not be reached                                               |
+| `error`      | For failed checks, the `TurnstileError` that `onError` gets                                                     |
+| `widget`     | The name from [`widgets`](#widgets), when the check used one                                                    |
+| `durationMs` | Time spent on siteverify, retry included                                                                        |
+| `attempts`   | `1`, or `2` when the first request failed and was retried                                                       |
+
+`result` is Cloudflare's whole answer, including `cdata` and `metadata.ephemeral_id`, so keep it out of logs and metric labels as it is. The hook gets its own copy of it, so removing fields there does not change the check.
+
+The event describes Cloudflare's answer, not the guard's decision. A token Cloudflare accepted counts as `success` even when the hostname or action check or `validateResult` rejects it afterwards. Requests the guard turns away before calling Cloudflare, such as those without a token, produce no event. If `onVerify` throws or returns a rejected promise, the module logs that and the check goes on.
+
+## debug
+
+Logs one line per siteverify check at Nest's debug level:
+
+```text
+DEBUG [TurnstileModule] siteverify rejected [timeout-or-duplicate]: 1 attempt, 84 ms
+```
+
+The line has the outcome, Cloudflare's error codes, the widget name if there is one, the attempts and the duration. It never has the token, the secret key or `cdata`. Nest's default logger prints debug messages. If your app sets its own log levels, include `'debug'`.
+
+## widgets
+
+Adds widgets with their own secret keys, for forms that use a different Cloudflare widget than the rest of the app. A route picks one by name with [`@TurnstileCaptcha({ widget })`](./advanced#several-widgets).
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  widgets: {
+    newsletter: {
+      secretKey: process.env.TURNSTILE_NEWSLETTER_SECRET_KEY,
+      expectedAction: 'subscribe',
+    },
+  },
+});
+```
+
+A widget can also set its own `expectedHostname`, `expectedAction` and `tokenResponse`. Whatever it leaves out comes from the module. At startup, each widget's secret key gets the same checks as `secretKey`.
+
+## verifySecretOnStartup
+
+Sends Cloudflare's dummy token with each secret key when the app starts. If Cloudflare answers `invalid-input-secret`, the app does not start, so a wrong key fails the deploy instead of every protected request.
+
+```ts
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  verifySecretOnStartup: true,
+});
+```
+
+A working key rejects the dummy token as an invalid token, which counts as a pass. If Cloudflare cannot be reached or reports an internal error, the module logs a warning and starts anyway, which can delay startup by up to twice the [`timeout`](#timeout). The check does not run when `skipIf` is `true`, and it does not call `onVerify` or `onError`.
 
 ## isGlobal
 

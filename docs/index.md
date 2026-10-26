@@ -18,11 +18,11 @@ hero:
 
 features:
   - title: One decorator
-    details: Put @TurnstileCaptcha() on a route or a controller. Requests without a valid token stop at the guard.
+    details: Put @TurnstileCaptcha() on a route or a controller, or guard every route and mark the exceptions with @SkipTurnstile(). Requests without a valid token stop at the guard.
   - title: NestJS 10, 11 and 12
     details: Uses the Nest packages your app already has and adds no runtime dependencies of its own.
-  - title: Express, Fastify and GraphQL
-    details: The same guard protects REST routes on either HTTP adapter and GraphQL resolvers on Apollo or Mercurius.
+  - title: Express, Fastify, GraphQL and WebSockets
+    details: The same guard protects REST routes on either HTTP adapter, GraphQL resolvers on Apollo or Mercurius, and WebSocket gateways.
   - title: The checks Cloudflare recommends
     details: Verifies the hostname and action, retries a failed call once with an idempotency key, and keeps the secret key out of errors.
 ---

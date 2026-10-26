@@ -22,6 +22,7 @@ export default defineConfig({
         text: 'Guide',
         items: [
           { text: 'Get started', link: '/get-started' },
+          { text: 'Frontend frameworks', link: '/frontend' },
           { text: 'Options', link: '/turnstile-options' },
           { text: 'Error handling', link: '/error-handling' },
           { text: 'Testing', link: '/testing' },
@@ -29,8 +30,14 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Upgrading',
-        items: [{ text: 'From 0.0.x to 1.0', link: '/migration' }],
+        text: 'Migrating',
+        items: [
+          { text: 'From 0.0.x to 1.0', link: '/migration' },
+          {
+            text: 'From @nestlab/google-recaptcha',
+            link: '/from-google-recaptcha',
+          },
+        ],
       },
     ],
 

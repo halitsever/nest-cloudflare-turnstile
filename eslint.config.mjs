@@ -10,6 +10,7 @@ export default defineConfig([
     'coverage/',
     'docs/.vitepress/cache/',
     'docs/.vitepress/dist/',
+    'examples/*/dist/',
     '.superpowers/',
   ]),
   js.configs.recommended,
@@ -22,6 +23,10 @@ export default defineConfig([
   {
     files: ['**/*.cjs'],
     rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
+    files: ['test/consumer/*.test.cjs'],
+    languageOptions: { globals: globals.jest },
   },
   {
     rules: {

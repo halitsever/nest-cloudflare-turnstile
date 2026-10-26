@@ -24,10 +24,13 @@
   <img src="https://halitsever-api.vercel.app/api/details" alt="Details" />
 </p>
 
-- One decorator for a route or a whole controller
-- NestJS 10, 11 and 12, on Express or Fastify, including GraphQL resolvers
+- One decorator for a route or a whole controller, or a global guard with `@SkipTurnstile()` for the exceptions
+- NestJS 10, 11 and 12, on Express or Fastify, including GraphQL resolvers and WebSocket gateways
 - No runtime dependencies besides Nest itself
 - Hostname and action checks, as Cloudflare recommends
+- Several widgets in one app, each with its own secret key
+- An `onVerify` hook for metrics, and debug logs without tokens or secrets
+- An optional startup check that Cloudflare accepts your secret key
 - One safe retry when siteverify fails, and errors that never contain your secret key
 
 <p align="center">
@@ -101,11 +104,14 @@ TurnstileModule.forRoot({
 ## Documentation
 
 - [Get started](https://halitsever.github.io/nest-cloudflare-turnstile/get-started): module setup and sending the token from the browser
+- [Frontend frameworks](https://halitsever.github.io/nest-cloudflare-turnstile/frontend): sending the token from React, Next.js, Vue and Angular
 - [Options](https://halitsever.github.io/nest-cloudflare-turnstile/turnstile-options): every option with its default
 - [Error handling](https://halitsever.github.io/nest-cloudflare-turnstile/error-handling): responses, custom exceptions and `onError`
 - [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing): `skipIf` and Cloudflare's test keys
-- [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, the verification result, GraphQL and manual checks
+- [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, a global guard, several widgets, the verification result, GraphQL, WebSockets and manual checks
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
+- [Migrating from @nestlab/google-recaptcha](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha)
+- [Basic example](./examples/basic): a runnable app with Cloudflare's test keys
 
 <p align="center">
   <a href="https://github.com/halitsever/nest-cloudflare-turnstile/issues"><img src="https://halitsever-api.vercel.app/api/issue" alt="Issues" /></a>

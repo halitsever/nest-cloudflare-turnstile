@@ -94,7 +94,7 @@ await fetch('/auth/login', {
 });
 ```
 
-To read the token from somewhere else, pass `tokenResponse`:
+To read the token from somewhere else, such as a field the widget renamed with `data-response-field-name`, pass `tokenResponse`:
 
 ```ts
 TurnstileModule.forRoot({
@@ -116,3 +116,5 @@ Guards run before interceptors, so a multipart body that `FileInterceptor` parse
 | Cloudflare cannot be reached, or it rejects the secret | 500 `Failed turnstile verification.`       |
 
 [Error handling](./error-handling) shows how to change these responses. [Testing](./testing) covers local development and automated tests.
+
+For a complete app that runs with Cloudflare's test keys, see the [basic example](https://github.com/halitsever/nest-cloudflare-turnstile/tree/main/examples/basic).
