@@ -1,5 +1,41 @@
 # Changelog
 
+## v1.2.0
+
+[compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v1.1.0...v1.2.0)
+
+Several widgets, WebSocket gateways, `@SkipTurnstile()` for a global guard, an `onVerify` hook with debug logs and an optional startup check for secret keys. If your code calls `exceptionFactory` itself, it now has to pass the `ExecutionContext` as a third argument. Nothing else in 1.1 changes.
+
+### 🚀 Enhancements
+
+- Support several widgets with their own secret keys ([ec4915c](https://github.com/halitsever/nest-cloudflare-turnstile/commit/ec4915c))
+- Add an onVerify hook and debug logging ([ee00666](https://github.com/halitsever/nest-cloudflare-turnstile/commit/ee00666))
+- Check secret keys with Cloudflare at startup ([54cf481](https://github.com/halitsever/nest-cloudflare-turnstile/commit/54cf481))
+- Add SkipTurnstile for routes under a global guard ([62dba11](https://github.com/halitsever/nest-cloudflare-turnstile/commit/62dba11))
+- Protect WebSocket gateway messages ([dad9bf5](https://github.com/halitsever/nest-cloudflare-turnstile/commit/dad9bf5))
+
+### 🩹 Fixes
+
+- Keep the verification result out of logged or copied requests ([235b957](https://github.com/halitsever/nest-cloudflare-turnstile/commit/235b957))
+
+### 📖 Documentation
+
+- Add frontend and google-recaptcha migration guides ([3399f98](https://github.com/halitsever/nest-cloudflare-turnstile/commit/3399f98))
+- Add a runnable example with Cloudflare's test keys ([312f1f4](https://github.com/halitsever/nest-cloudflare-turnstile/commit/312f1f4))
+- Explain what the global guard covers and what onVerify receives ([1fdbfcd](https://github.com/halitsever/nest-cloudflare-turnstile/commit/1fdbfcd))
+
+### 📦 Build
+
+- Update msw to 3 ([6e67f32](https://github.com/halitsever/nest-cloudflare-turnstile/commit/6e67f32))
+
+### ✅ Tests
+
+- Type-check the new API in the consumer app ([fa0dccd](https://github.com/halitsever/nest-cloudflare-turnstile/commit/fa0dccd))
+
+### ❤️ Contributors
+
+- Halit Sever ([@halitsever](https://github.com/halitsever))
+
 ## v1.1.0
 
 [compare changes](https://github.com/halitsever/nest-cloudflare-turnstile/compare/v1.0.0...v1.1.0)
