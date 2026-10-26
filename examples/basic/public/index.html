@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Turnstile and NestJS</title>
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      async
+      defer
+    ></script>
+  </head>
+  <body>
+    <form action="/contact" method="POST">
+      <p><textarea name="message" rows="3">Hello from the form</textarea></p>
+      <!-- Cloudflare's test site key: the widget always passes and issues a dummy token. -->
+      <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA"></div>
+      <p><button type="submit">Send</button></p>
+    </form>
+  </body>
+</html>

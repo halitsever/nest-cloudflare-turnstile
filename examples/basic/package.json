@@ -1,0 +1,21 @@
+{
+  "name": "nest-cloudflare-turnstile-example",
+  "private": true,
+  "description": "A NestJS form behind Cloudflare Turnstile, using Cloudflare's test keys",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/main.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.0",
+    "@nestjs/core": "^11.1.0",
+    "@nestjs/platform-express": "^11.1.0",
+    "nest-cloudflare-turnstile": "^1.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "~6.0.3"
+  }
+}
