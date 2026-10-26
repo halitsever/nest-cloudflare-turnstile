@@ -111,7 +111,7 @@ It is `undefined` when `skipIf` let the request through.
 
 ## Verify a token yourself
 
-`TurnstileService` is available for code outside the guard, such as WebSocket gateways or queue workers:
+`TurnstileService` is available for code outside the guard, such as queue workers or a gateway's `handleConnection`:
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -152,6 +152,40 @@ export class AuthResolver {
 The guard finds the request through the GraphQL context: `req` on Apollo, `reply` on Mercurius. Both drivers put them there by default. If you pass your own `context` factory, keep those fields, or every call is treated as missing a token.
 
 Every guarded field checks its own token, and Cloudflare accepts a token only once. An operation can therefore resolve one guarded field per token. A second guarded field in the same operation, including an alias of the first such as `{ a: login b: login }`, is rejected, so one solved challenge cannot cover a batch of login attempts.
+
+## WebSocket gateways
+
+The guard also protects `@SubscribeMessage()` handlers. Send the token with each message in its `cf-turnstile-response` field:
+
+```ts
+import {
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
+import { TurnstileCaptcha, TurnstileResult } from 'nest-cloudflare-turnstile';
+import type { TurnstileVerifyResponse } from 'nest-cloudflare-turnstile';
+
+@WebSocketGateway()
+export class ChatGateway {
+  @SubscribeMessage('join')
+  @TurnstileCaptcha({ action: 'join' })
+  join(
+    @MessageBody() body: { room: string },
+    @TurnstileResult() result: TurnstileVerifyResponse,
+  ) {
+    return { room: body.room };
+  }
+}
+```
+
+```js
+socket.emit('join', { room: 'lobby', 'cf-turnstile-response': token });
+```
+
+Cloudflare accepts a token only once, so every guarded message needs a fresh one. A missing or rejected token throws a `WsException`, which Nest's socket.io adapter sends to the client as an `exception` event.
+
+Where the options take the request, a gateway passes the socket instead. On socket.io, `remoteIp: (req) => req.ip ?? req.handshake?.address` covers HTTP routes and gateways alike. `@TurnstileResult()` reads the result from the message, so another message on the same socket never sees it.
 
 ## Fastify
 

@@ -2,24 +2,24 @@
 
 `forRoot` takes these options. `forRootAsync` takes the same object from its factory.
 
-| Option                  | Type                                                    | Default                                |
-| ----------------------- | ------------------------------------------------------- | -------------------------------------- |
-| `secretKey`             | `string \| undefined`                                   | required                               |
-| `tokenResponse`         | `(req, context) => unknown`                             | `cf-turnstile-response` body or header |
-| `remoteIp`              | `(req) => string \| undefined`                          | not sent                               |
-| `expectedHostname`      | `string \| string[]`                                    | any hostname                           |
-| `expectedAction`        | `string \| string[]`                                    | any action                             |
-| `validateResult`        | `(result, req, context) => boolean \| Promise<boolean>` | none                                   |
-| `timeout`               | `number`                                                | `5000`                                 |
-| `fetch`                 | `typeof fetch`                                          | the global `fetch`                     |
-| `skipIf`                | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                |
-| `exceptionFactory`      | `(reason, details) => Error`                            | `BadRequestException`                  |
-| `onError`               | `(error: TurnstileError) => void`                       | none                                   |
-| `onVerify`              | `(event: TurnstileVerifyEvent) => void`                 | none                                   |
-| `debug`                 | `boolean`                                               | `false`                                |
-| `widgets`               | `Record<string, TurnstileWidgetOptions>`                | none                                   |
-| `verifySecretOnStartup` | `boolean`                                               | `false`                                |
-| `isGlobal`              | `boolean`                                               | `true`                                 |
+| Option                  | Type                                                    | Default                                                     |
+| ----------------------- | ------------------------------------------------------- | ----------------------------------------------------------- |
+| `secretKey`             | `string \| undefined`                                   | required                                                    |
+| `tokenResponse`         | `(req, context) => unknown`                             | `cf-turnstile-response` body field, header or message field |
+| `remoteIp`              | `(req) => string \| undefined`                          | not sent                                                    |
+| `expectedHostname`      | `string \| string[]`                                    | any hostname                                                |
+| `expectedAction`        | `string \| string[]`                                    | any action                                                  |
+| `validateResult`        | `(result, req, context) => boolean \| Promise<boolean>` | none                                                        |
+| `timeout`               | `number`                                                | `5000`                                                      |
+| `fetch`                 | `typeof fetch`                                          | the global `fetch`                                          |
+| `skipIf`                | `boolean \| (context) => boolean \| Promise<boolean>`   | `false`                                                     |
+| `exceptionFactory`      | `(reason, details, context) => Error`                   | `BadRequestException`, or `WsException` in gateways         |
+| `onError`               | `(error: TurnstileError) => void`                       | none                                                        |
+| `onVerify`              | `(event: TurnstileVerifyEvent) => void`                 | none                                                        |
+| `debug`                 | `boolean`                                               | `false`                                                     |
+| `widgets`               | `Record<string, TurnstileWidgetOptions>`                | none                                                        |
+| `verifySecretOnStartup` | `boolean`                                               | `false`                                                     |
+| `isGlobal`              | `boolean`                                               | `true`                                                      |
 
 ## secretKey
 
@@ -27,7 +27,7 @@ The secret key of your widget, from the Cloudflare dashboard. Keep it on the ser
 
 ## tokenResponse
 
-Reads the token from the request. The second argument is Nest's `ExecutionContext`. When you leave it out, the guard reads the `cf-turnstile-response` body field that the widget adds to forms, then a header with the same name.
+Reads the token from the request. The second argument is Nest's `ExecutionContext`. When you leave it out, the guard reads the `cf-turnstile-response` body field that the widget adds to forms, then a header with the same name. In [WebSocket gateways](./advanced#websocket-gateways), it reads that field from the message.
 
 ```ts
 TurnstileModule.forRoot({
@@ -135,7 +135,7 @@ Base the decision only on data your server set, such as the user an authenticati
 
 ## exceptionFactory
 
-Builds the exception the guard throws for a missing or rejected token. See [Error handling](./error-handling#custom-exceptions).
+Builds the exception the guard throws for a missing or rejected token. Its third argument is the `ExecutionContext`, which tells HTTP routes and WebSocket gateways apart. See [Error handling](./error-handling#custom-exceptions).
 
 ## onError
 

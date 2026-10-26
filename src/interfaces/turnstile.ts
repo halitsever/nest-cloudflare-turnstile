@@ -38,10 +38,11 @@ export interface ITurnstileOptions {
   /** Lets requests through without a check, for example in tests. */
   skipIf?:
     boolean | ((context: ExecutionContext) => boolean | Promise<boolean>);
-  /** Builds the exception for a missing or rejected token. Defaults to `BadRequestException`. */
+  /** Builds the exception for a missing or rejected token. Defaults to `BadRequestException`, or `WsException` in gateways. */
   exceptionFactory?: (
     reason: TurnstileFailureReason,
     details: TurnstileFailureDetails,
+    context: ExecutionContext,
   ) => Error;
   /** Called when siteverify cannot be reached or refuses the request itself. The guard then answers 500. */
   onError?: (error: TurnstileError) => void;

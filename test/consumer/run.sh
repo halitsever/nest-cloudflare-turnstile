@@ -20,6 +20,7 @@ esac
 npm init -y >/dev/null
 npm install --ignore-scripts --no-audit --no-fund \
   "@nestjs/common@$1" "@nestjs/core@$1" "@nestjs/platform-express@$1" \
+  "@nestjs/websockets@$1" "@nestjs/platform-socket.io@$1" socket.io-client \
   reflect-metadata rxjs "typescript@$typescript" @types/node@20 "$2"
 
 copies=$(find node_modules -path '*/@nestjs/common/package.json' | wc -l | tr -d ' ')

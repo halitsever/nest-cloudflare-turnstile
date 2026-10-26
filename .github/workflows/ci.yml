@@ -67,6 +67,7 @@ jobs:
           @nestjs/platform-express@${{ matrix.nest }}
           @nestjs/platform-fastify@${{ matrix.nest }}
           @nestjs/testing@${{ matrix.nest }}
+          @nestjs/websockets@${{ matrix.nest }}
       - run: npm test
 
   live:

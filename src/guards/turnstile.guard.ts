@@ -22,7 +22,7 @@ import type {
   TurnstileWidgetOptions,
 } from '../interfaces/turnstile';
 import { TurnstileService } from '../services/turnstile.service';
-import { getRequest } from '../utils/request';
+import { getRequest, getResultHolder } from '../utils/request';
 import { findWidget } from '../utils/widgets';
 
 // Nest shares one context among a call's guards, so a guarded controller and route verify once,
@@ -49,9 +49,9 @@ export class TurnstileGuard implements CanActivate {
     const readToken =
       widget?.tokenResponse ?? this.options.tokenResponse ?? readDefaultToken;
     const token = readToken(request, context);
-    if (!token) throw this.reject('missing', []);
+    if (!token) throw await this.reject('missing', [], context);
     if (typeof token !== 'string' || token.length > MAX_TOKEN_LENGTH) {
-      throw this.reject('invalid', []);
+      throw await this.reject('invalid', [], context);
     }
 
     const result = await this.turnstileService.validateToken(token, {
@@ -63,19 +63,22 @@ export class TurnstileGuard implements CanActivate {
       const reason = codes.includes('missing-input-response')
         ? 'missing'
         : 'invalid';
-      throw this.reject(reason, codes);
+      throw await this.reject(reason, codes, context);
     }
 
     const mismatch = this.findMismatch(result, context, widget);
-    if (mismatch) throw this.reject('invalid', [mismatch]);
+    if (mismatch) throw await this.reject('invalid', [mismatch], context);
 
     const { validateResult } = this.options;
     if (validateResult && !(await validateResult(result, request, context))) {
-      throw this.reject('invalid', ['validate-result-failed']);
+      throw await this.reject('invalid', ['validate-result-failed'], context);
     }
 
     verifiedCalls.add(context);
-    if (request) request[TURNSTILE_RESULT] = result;
+    const holder = getResultHolder(context);
+    if (typeof holder === 'object' && holder !== null) {
+      holder[TURNSTILE_RESULT] = result;
+    }
     return true;
   }
 
@@ -129,17 +132,28 @@ export class TurnstileGuard implements CanActivate {
       .find((value) => value !== undefined);
   }
 
-  private reject(reason: TurnstileFailureReason, errorCodes: string[]): Error {
+  private async reject(
+    reason: TurnstileFailureReason,
+    errorCodes: string[],
+    context: ExecutionContext,
+  ): Promise<Error> {
     if (this.options.exceptionFactory) {
-      return this.options.exceptionFactory(reason, { errorCodes });
+      return this.options.exceptionFactory(reason, { errorCodes }, context);
     }
-    return new BadRequestException(
-      reason === 'missing' ? Messages.MISSING : Messages.INVALID,
-    );
+    const message = reason === 'missing' ? Messages.MISSING : Messages.INVALID;
+    if (context.getType() === 'ws') {
+      // Nest reports any other error on a socket as "Internal server error".
+      const { WsException } = await import('@nestjs/websockets');
+      return new WsException(message);
+    }
+    return new BadRequestException(message);
   }
 }
 
-function readDefaultToken(req: any): unknown {
+function readDefaultToken(req: any, context: ExecutionContext): unknown {
+  if (context.getType() === 'ws') {
+    return context.switchToWs().getData()?.[TOKEN_FIELD];
+  }
   return req?.body?.[TOKEN_FIELD] ?? req?.headers?.[TOKEN_FIELD];
 }
 

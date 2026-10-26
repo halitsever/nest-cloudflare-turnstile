@@ -31,6 +31,21 @@ TurnstileModule.forRoot({
 
 Return an `HttpException` so Nest turns it into the status you chose. Any other error becomes a 500.
 
+In [WebSocket gateways](./advanced#websocket-gateways), the default is a `WsException` with the same message. If you set `exceptionFactory` and use gateways, read the transport from the third argument, because Nest answers any other error on a socket with `Internal server error`:
+
+```ts
+import { ForbiddenException } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
+
+TurnstileModule.forRoot({
+  secretKey: process.env.TURNSTILE_SECRET_KEY,
+  exceptionFactory: (reason, { errorCodes }, context) =>
+    context.getType() === 'ws'
+      ? new WsException({ reason, errorCodes })
+      : new ForbiddenException({ reason, errorCodes }),
+});
+```
+
 ### Error codes
 
 `errorCodes` holds Cloudflare's codes, or one of the codes the guard adds itself. It is empty when the token was missing or malformed before any call to Cloudflare.
