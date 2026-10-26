@@ -20,7 +20,7 @@ body:
     id: package-version
     attributes:
       label: nest-cloudflare-turnstile version
-      placeholder: 1.0.0
+      placeholder: 1.2.0
     validations:
       required: true
   - type: input
@@ -46,6 +46,7 @@ body:
         - Fastify
         - GraphQL with Apollo
         - GraphQL with Mercurius
+        - WebSocket gateway
         - Somewhere else
     validations:
       required: true
