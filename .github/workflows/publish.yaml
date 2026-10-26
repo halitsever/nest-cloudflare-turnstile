@@ -1,23 +1,26 @@
-name: Publish to NPM
+name: Publish to npm
+
 on:
   release:
-    types: [created]
+    types: [published]
+
+permissions:
+  contents: read
+  # npm trusted publishing exchanges this OIDC token for a short-lived publish credential.
+  id-token: write
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Install dependencies and test 🧪
-        run: npm ci && npm run test
-      - name: Run build 🔨
-        run: npm run build
-      - name: Publish package on NPM 📦
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Node 24 ships npm 11.5.1 or newer, which trusted publishing requires.
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm publish
