@@ -129,6 +129,19 @@ describe.each<Adapter>(['express', 'fastify'])(
       expect(siteverifyRequests).toHaveLength(0);
     });
 
+    it("reads the widget's field from a classic form post", async () => {
+      siteverifyReplies({ body: verified });
+      app = await createApp(adapter, { tokenResponse: undefined });
+
+      const res = await request(app.getHttpServer())
+        .post('/protected')
+        .type('form')
+        .send({ 'cf-turnstile-response': 'token-from-form' });
+
+      expect(res.status).toBe(201);
+      expect(siteverifyRequests[0].response).toBe('token-from-form');
+    });
+
     it('treats a missing-input-response verdict as a missing token', async () => {
       siteverifyReplies({
         body: {
