@@ -77,7 +77,11 @@ export class TurnstileGuard implements CanActivate {
     verifiedCalls.add(context);
     const holder = getResultHolder(context);
     if (typeof holder === 'object' && holder !== null) {
-      holder[TURNSTILE_RESULT] = result;
+      // Hidden from logs and spreads of the request or message, since cdata can hold a session ID.
+      Object.defineProperty(holder, TURNSTILE_RESULT, {
+        value: result,
+        configurable: true,
+      });
     }
     return true;
   }

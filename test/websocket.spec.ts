@@ -2,6 +2,7 @@ import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { Test } from '@nestjs/testing';
 import { WsException } from '@nestjs/websockets';
+import { inspect } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import {
   ITurnstileOptions,
@@ -145,6 +146,17 @@ describe('WebSocket gateways', () => {
     const unguarded = wsContext({ text: 'hello' });
 
     expect(paramFactory(TurnstileResult)(undefined, unguarded)).toBeUndefined();
+  });
+
+  it('keeps the result out of logs and copies of the message', async () => {
+    siteverifyReplies({ body: verified });
+    const guard = await createGuard();
+    const data = { 'cf-turnstile-response': 'token-from-widget' };
+
+    await guard.canActivate(wsContext(data));
+
+    expect(inspect(data)).not.toContain(verified.cdata);
+    expect(Object.getOwnPropertySymbols({ ...data })).toEqual([]);
   });
 
   it('accepts messages whose data is not an object', async () => {

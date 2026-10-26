@@ -142,6 +142,19 @@ describe('onVerify', () => {
     expect(onVerify.mock.calls[0][0].outcome).toBe('success');
   });
 
+  it('keeps changes onVerify makes to the result away from the check', async () => {
+    siteverifyReplies({ body: verified });
+    const service = await createService({
+      onVerify: (event) => {
+        delete event.result?.cdata;
+      },
+    });
+
+    const result = await service.validateToken('token-from-widget');
+
+    expect(result.cdata).toBe(verified.cdata);
+  });
+
   it('keeps the check working when onVerify throws', async () => {
     siteverifyReplies({ body: verified });
     const logError = vi

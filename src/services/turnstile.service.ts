@@ -198,7 +198,11 @@ export class TurnstileService implements OnModuleInit {
   private notify(event: TurnstileVerifyEvent): void {
     const { onVerify, debug } = this.options;
     if (debug) this.logger.debug(summarize(event));
-    if (onVerify) this.runHook('onVerify', () => onVerify(event));
+    if (onVerify) {
+      // A copy, so a hook that redacts the result cannot change what the guard checks next.
+      const copy = { ...event, result: structuredClone(event.result) };
+      this.runHook('onVerify', () => onVerify(copy));
+    }
   }
 
   /** A hook that throws or rejects is logged, so it can neither break the check nor leave an unhandled rejection. */
