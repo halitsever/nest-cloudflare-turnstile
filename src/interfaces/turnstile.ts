@@ -1,10 +1,4 @@
-import {
-  Type,
-  DynamicModule,
-  ForwardReference,
-  InjectionToken,
-  OptionalFactoryDependency,
-} from '@nestjs/common';
+import type { ConfigurableModuleAsyncOptions } from '@nestjs/common';
 import type { TurnstileError } from '../errors/turnstile.error';
 
 export interface ITurnstileOptions {
@@ -17,15 +11,15 @@ export interface ITurnstileOptions {
   timeout?: number;
 }
 
-export interface IAsyncTurnstileOptions {
-  imports?: Array<
-    Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference
-  >;
-  inject?: Array<InjectionToken | OptionalFactoryDependency>;
-  useFactory: (
-    ...args: any[]
-  ) => ITurnstileOptions | Promise<ITurnstileOptions>;
+/** Implemented by classes passed to `forRootAsync` as `useClass` or `useExisting`. */
+export interface TurnstileOptionsFactory {
+  createTurnstileOptions(): ITurnstileOptions | Promise<ITurnstileOptions>;
 }
+
+export type IAsyncTurnstileOptions = ConfigurableModuleAsyncOptions<
+  ITurnstileOptions,
+  'createTurnstileOptions'
+> & { isGlobal?: boolean };
 
 /** Body of a siteverify answer. */
 export interface TurnstileVerifyResponse {
