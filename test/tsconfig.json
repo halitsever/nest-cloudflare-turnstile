@@ -4,5 +4,6 @@
     "module": "preserve",
     "moduleResolution": "bundler"
   },
-  "include": ["**/*.ts", "../src", "../*.mts"]
+  "include": ["**/*.ts", "../src", "../*.mts"],
+  "exclude": ["consumer"]
 }
