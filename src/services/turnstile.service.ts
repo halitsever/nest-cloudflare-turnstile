@@ -1,43 +1,46 @@
-import { HttpService } from '@nestjs/axios';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { firstValueFrom, catchError } from 'rxjs';
-import type { ITurnstileOptions } from '../interfaces/turnstile';
+import { Messages } from '../constants/messages';
+import { TurnstileError } from '../errors/turnstile.error';
+import type {
+  ITurnstileOptions,
+  TurnstileVerifyResponse,
+} from '../interfaces/turnstile';
+
+const SITEVERIFY_URL =
+  'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const DEFAULT_TIMEOUT_MS = 5_000;
 
 @Injectable()
 export class TurnstileService {
-  private readonly BASE_URL = 'https://challenges.cloudflare.com';
-
   constructor(
-    private readonly httpService: HttpService,
     @Inject('TurnstileServiceOptions')
     private readonly options: ITurnstileOptions,
   ) {}
 
-  async validateToken(token: string) {
-    const { data } = await firstValueFrom(
-      this.httpService
-        .post(`${this.BASE_URL}/turnstile/v0/siteverify`, {
-          response: token,
+  async validateToken(token: string): Promise<TurnstileVerifyResponse> {
+    try {
+      const response = await fetch(SITEVERIFY_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
           secret: this.options.secretKey,
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        })
-        .pipe(
-          catchError((error) => {
-            if (this.options.onError) this.options.onError(error);
-
-            throw new InternalServerErrorException(
-              'Failed turnstile verification.',
-            );
-          }),
-        ),
-    );
-
-    return data;
+          response: token,
+        }),
+        signal: AbortSignal.timeout(this.options.timeout ?? DEFAULT_TIMEOUT_MS),
+      });
+      if (!response.ok) {
+        throw new Error(`siteverify answered HTTP ${response.status}`);
+      }
+      return (await response.json()) as TurnstileVerifyResponse;
+    } catch (cause) {
+      this.options.onError?.(
+        new TurnstileError('Turnstile siteverify request failed', { cause }),
+      );
+      throw new InternalServerErrorException(Messages.FAIL);
+    }
   }
 }

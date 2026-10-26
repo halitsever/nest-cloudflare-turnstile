@@ -1,6 +1,5 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { TurnstileService } from './services/turnstile.service';
-import { HttpModule } from '@nestjs/axios';
 import {
   IAsyncTurnstileOptions,
   ITurnstileOptions,
@@ -22,7 +21,6 @@ export class TurnstileModule {
 
     return {
       module: TurnstileModule,
-      imports: [HttpModule],
       providers: [...providers, TurnstileModuleOptionsProvider],
       exports: [...providers, TurnstileModuleOptionsProvider],
     };
@@ -41,7 +39,7 @@ export class TurnstileModule {
 
     return {
       module: TurnstileModule,
-      imports: [...(imports || []), HttpModule],
+      imports: imports || [],
       providers: [...providers, TurnstileModuleOptionsProvider],
       exports: [...providers, TurnstileModuleOptionsProvider],
     };

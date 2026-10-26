@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
 export const SITEVERIFY_URL =
@@ -29,7 +29,8 @@ export const wrongSecret = {
 };
 
 export type SiteverifyReply =
-  { body: Record<string, unknown>; status?: number } | 'network-error';
+  | { body: Record<string, unknown>; status?: number; delayMs?: number }
+  | 'network-error';
 
 /** Every body that reached siteverify during the current test. */
 export const siteverifyRequests: Array<Record<string, string>> = [];
@@ -48,6 +49,7 @@ export function siteverifyReplies(...replies: SiteverifyReply[]): void {
       siteverifyRequests.push(await readBody(request));
       const reply = replies[Math.min(call++, replies.length - 1)];
       if (reply === 'network-error') return HttpResponse.error();
+      if (reply.delayMs) await delay(reply.delayMs);
       return HttpResponse.json(reply.body, { status: reply.status ?? 200 });
     }),
   );
