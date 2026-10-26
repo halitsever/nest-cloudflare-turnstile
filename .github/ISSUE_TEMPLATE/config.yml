@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://halitsever.github.io/nest-cloudflare-turnstile
+    about: Setup, options, error handling and testing guides.
+  - name: Report a security vulnerability
+    url: https://github.com/halitsever/nest-cloudflare-turnstile/security/advisories/new
+    about: Please report security problems privately.
