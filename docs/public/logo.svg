@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 4 52 58" role="img" aria-label="Cloudflare Turnstile for NestJS">
+  <defs>
+    <linearGradient id="shield" x1="32" y1="6" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FAAE40"/>
+      <stop offset="0.55" stop-color="#F38020"/>
+      <stop offset="1" stop-color="#EC6512"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#shield)">
+    <circle cx="20.5" cy="26" r="9.5"/>
+    <circle cx="32" cy="19.5" r="12.5"/>
+    <circle cx="43.5" cy="26" r="9.5"/>
+    <path d="M11 26h42v10c0 12.5-9.5 19.5-21 24C20.5 55.5 11 48.5 11 36z"/>
+  </g>
+  <path d="M22.5 37.5l6.5 6.5 13-14" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
