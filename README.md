@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://i.ibb.co/HT1M4Kb/image.png" height="80" width="80" alt="Cloud logo" />
+  <img src="./docs/public/logo.svg" height="80" alt="nest-cloudflare-turnstile logo" />
   <br />
   <img src="https://halitsever-api.vercel.app/api/repo-title?title=Cloudflare%20Turnstile%20NestJS" alt="Cloudflare Turnstile NestJS" />
 </p>
