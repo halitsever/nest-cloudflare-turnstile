@@ -241,11 +241,9 @@ const href = (link: string) => (link.startsWith('http') ? link : page(link));
       <!-- Hero -->
       <section class="hero">
         <a class="badge" :href="`${repo}/blob/main/CHANGELOG.md`">
-          <span class="badge-handle l" aria-hidden="true" />
           <Icon name="shield" :size="17" />
           Turnstile for NestJS
           <span class="badge-version">v{{ version }}</span>
-          <span class="badge-handle r" aria-hidden="true" />
         </a>
 
         <h1 class="hero-title">Stop Bots Before Your Handlers Run</h1>
@@ -518,12 +516,11 @@ h3 {
 }
 
 .badge {
-  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
-  border: 1px dashed var(--cf-orange);
+  padding: 8px 18px;
+  border-radius: 999px;
   background: var(--cf-orange-tint);
   color: var(--cf-orange-text);
   font-size: 15px;
@@ -532,29 +529,14 @@ h3 {
 }
 
 .badge-version {
-  padding-left: 8px;
-  border-left: 1px solid rgba(255, 94, 31, 0.35);
+  margin-left: 2px;
   font-size: 13px;
   color: var(--h-muted);
 }
 
-.badge-handle {
-  position: absolute;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--cf-orange);
-  border-radius: 50%;
-  background: var(--h-bg);
-  transform: translateY(-50%);
-}
-
-.badge-handle.l {
-  left: -4px;
-}
-
-.badge-handle.r {
-  right: -4px;
+.badge:focus-visible {
+  outline: 2px solid var(--cf-orange);
+  outline-offset: 3px;
 }
 
 .hero-title {
