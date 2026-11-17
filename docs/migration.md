@@ -1,3 +1,7 @@
+---
+description: 'Upgrade nest-cloudflare-turnstile from 0.0.x to 1.0: requirements, behavior changes and new features.'
+---
+
 # Upgrading from 0.0.x to 1.0
 
 Most apps upgrade by bumping the version. The module, the decorator and their options keep their names. Read the list below if you handle errors, run without a secret in some environments, or still use Node.js 18.

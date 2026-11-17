@@ -1,3 +1,7 @@
+---
+description: 'Per-route actions, a global guard, several widgets, GraphQL, WebSocket gateways and Fastify with Cloudflare Turnstile in NestJS.'
+---
+
 # Advanced usage
 
 ## Per-route actions

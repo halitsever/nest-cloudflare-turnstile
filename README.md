@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  ☁️ A guard that checks <a href="https://developers.cloudflare.com/turnstile/">Cloudflare Turnstile</a> tokens before your NestJS handlers run.
+  ☁️ <a href="https://developers.cloudflare.com/turnstile/">Cloudflare Turnstile</a> captcha guard for NestJS. It verifies Turnstile tokens before your handlers run, on Express, Fastify, GraphQL and WebSockets.
 </p>
 
 <p align="center">

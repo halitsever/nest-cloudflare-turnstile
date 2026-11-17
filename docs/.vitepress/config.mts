@@ -8,11 +8,27 @@ const repo = 'https://github.com/halitsever/nest-cloudflare-turnstile';
 const description =
   'A NestJS guard that verifies Cloudflare Turnstile tokens before your handlers run.';
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: pkg.name,
+  description,
+  url: siteUrl,
+  codeRepository: repo,
+  programmingLanguage: 'TypeScript',
+  runtimePlatform: 'Node.js',
+  license: 'https://opensource.org/licenses/MIT',
+  author: { '@type': 'Person', name: 'Halit Sever', url: 'https://halit.org' },
+};
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  lang: 'en-US',
   title: 'Cloudflare Turnstile for NestJS',
   description,
   base,
+
+  sitemap: { hostname: siteUrl },
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
@@ -33,8 +49,24 @@ export default defineConfig({
     ['meta', { property: 'og:title', content: 'nest-cloudflare-turnstile' }],
     ['meta', { property: 'og:description', content: description }],
     ['meta', { property: 'og:image', content: `${siteUrl}og.png` }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['script', { type: 'application/ld+json' }, JSON.stringify(jsonLd)],
   ],
+
+  transformPageData(pageData) {
+    if (pageData.isNotFound) return;
+    const path = pageData.relativePath
+      .replace(/(^|\/)index\.md$/, '$1')
+      .replace(/\.md$/, '.html');
+    const url = `${siteUrl}${path}`;
+    pageData.frontmatter.head ??= [];
+    pageData.frontmatter.head.push(
+      ['link', { rel: 'canonical', href: url }],
+      ['meta', { property: 'og:url', content: url }],
+    );
+  },
 
   markdown: {
     theme: { light: codeThemeLight, dark: codeThemeDark },

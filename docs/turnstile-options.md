@@ -1,3 +1,7 @@
+---
+description: 'Every TurnstileModule option for Cloudflare Turnstile in NestJS, with types and defaults.'
+---
+
 # Options
 
 `forRoot` takes these options. `forRootAsync` takes the same object from its factory.
