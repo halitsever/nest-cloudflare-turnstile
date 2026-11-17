@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://halitsever.github.io/nest-cloudflare-turnstile/sitemap.xml

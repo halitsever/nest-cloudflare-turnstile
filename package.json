@@ -1,7 +1,7 @@
 {
   "name": "nest-cloudflare-turnstile",
   "version": "1.2.0",
-  "description": "🔥 Cloudflare Turnstile integration for NestJS",
+  "description": "Cloudflare Turnstile captcha guard for NestJS. Verifies Turnstile tokens on Express, Fastify, GraphQL and WebSocket routes.",
   "keywords": [
     "nestjs",
     "nest",
@@ -9,7 +9,14 @@
     "turnstile",
     "captcha",
     "guard",
-    "bot-protection"
+    "bot-protection",
+    "cloudflare-turnstile",
+    "nestjs-module",
+    "captcha-verification",
+    "recaptcha-alternative",
+    "spam-protection",
+    "express",
+    "fastify"
   ],
   "homepage": "https://halitsever.github.io/nest-cloudflare-turnstile",
   "bugs": {
