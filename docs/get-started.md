@@ -47,7 +47,7 @@ TurnstileModule.forRootAsync({
 
 The module is global, so feature modules can use the guard without importing it again. The app refuses to start when `secretKey` is empty, unless [`skipIf`](./turnstile-options#skipif) is `true`.
 
-## Protect a route
+## Protect a route with the guard
 
 ```ts
 import { Controller, Post } from '@nestjs/common';

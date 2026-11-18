@@ -6,7 +6,7 @@ const base = '/nest-cloudflare-turnstile/';
 const siteUrl = 'https://halitsever.github.io/nest-cloudflare-turnstile/';
 const repo = 'https://github.com/halitsever/nest-cloudflare-turnstile';
 const description =
-  'A NestJS guard that verifies Cloudflare Turnstile tokens before your handlers run.';
+  'A NestJS guard that verifies Cloudflare Turnstile captcha tokens before your handlers run, on Express, Fastify, GraphQL and WebSockets. Includes a guide for moving from reCAPTCHA.';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -106,7 +106,7 @@ export default defineConfig({
         items: [
           { text: 'From 0.0.x to 1.0', link: '/migration' },
           {
-            text: 'From @nestlab/google-recaptcha',
+            text: 'From reCAPTCHA',
             link: '/from-google-recaptcha',
           },
         ],

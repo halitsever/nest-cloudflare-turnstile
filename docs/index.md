@@ -2,7 +2,7 @@
 layout: page
 pageClass: home-page
 sidebar: false
-title: Cloudflare Turnstile for NestJS
+title: Turnstile captcha guard for NestJS
 ---
 
 <HomePage />

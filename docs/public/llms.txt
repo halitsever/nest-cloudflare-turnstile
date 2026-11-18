@@ -14,7 +14,7 @@ Install with `npm install nest-cloudflare-turnstile` (Node.js 20 or later). Regi
 - [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing.html): skipIf, stubbing the service and Cloudflare's test keys
 - [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced.html): per-route actions, a global guard, several widgets, GraphQL, WebSockets, Fastify and proxies
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration.html): requirements and behavior changes in 1.0
-- [Migrating from @nestlab/google-recaptcha](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha.html): option and decorator mapping from reCAPTCHA
+- [Migrating from reCAPTCHA](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha.html): option, decorator and error code mapping from @nestlab/google-recaptcha
 
 ## Optional
 

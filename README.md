@@ -101,6 +101,10 @@ TurnstileModule.forRoot({
 > [!WARNING]
 > `1x0000000000000000000000000000000AA` is Cloudflare's always-passes test secret. In production it lets every request with a token through, so the module logs a warning when it runs with `NODE_ENV=production`.
 
+## Migrating from reCAPTCHA
+
+If your NestJS app uses `@nestlab/google-recaptcha`, most of the move is renaming: `GoogleRecaptchaModule.forRoot` becomes `TurnstileModule.forRoot` and `@Recaptcha()` becomes `@TurnstileCaptcha()`. Turnstile has no score, so the `score` option goes away and Cloudflare accepts or rejects the token. In the browser, swap the reCAPTCHA widget for the Turnstile one and send its token in `cf-turnstile-response`. The [migration guide](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha) maps every option, decorator and error code.
+
 ## Documentation
 
 - [Get started](https://halitsever.github.io/nest-cloudflare-turnstile/get-started): module setup and sending the token from the browser
@@ -110,7 +114,7 @@ TurnstileModule.forRoot({
 - [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing): `skipIf` and Cloudflare's test keys
 - [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced): per-route actions, a global guard, several widgets, the verification result, GraphQL, WebSockets and manual checks
 - [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration)
-- [Migrating from @nestlab/google-recaptcha](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha)
+- [Migrating from reCAPTCHA (@nestlab/google-recaptcha)](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha)
 - [Basic example](./examples/basic): a runnable app with Cloudflare's test keys
 
 <p align="center">
