@@ -1,5 +1,5 @@
 ---
-title: Migrate a NestJS app from reCAPTCHA to Turnstile
+title: reCAPTCHA to Turnstile migration
 description: 'Replace reCAPTCHA in a NestJS app: map @nestlab/google-recaptcha options, decorators and error codes to Cloudflare Turnstile with nest-cloudflare-turnstile.'
 ---
 
