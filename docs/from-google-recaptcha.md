@@ -1,8 +1,9 @@
 ---
-description: 'Move a NestJS app from @nestlab/google-recaptcha to Cloudflare Turnstile with nest-cloudflare-turnstile.'
+title: Migrate a NestJS app from reCAPTCHA to Turnstile
+description: 'Replace reCAPTCHA in a NestJS app: map @nestlab/google-recaptcha options, decorators and error codes to Cloudflare Turnstile with nest-cloudflare-turnstile.'
 ---
 
-# Migrating from @nestlab/google-recaptcha
+# Migrating from reCAPTCHA (@nestlab/google-recaptcha)
 
 [@nestlab/google-recaptcha](https://github.com/chvarkov/google-recaptcha) and this package share their shape: a module with `forRoot` and `forRootAsync`, a decorator that guards routes and one that injects the result. Replace the reCAPTCHA widget in the frontend, then rename things on the server with the tables below.
 

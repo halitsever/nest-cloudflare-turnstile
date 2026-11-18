@@ -248,9 +248,9 @@ const href = (link: string) => (link.startsWith('http') ? link : page(link));
 
         <h1 class="hero-title">Stop Bots Before Your Handlers Run</h1>
         <p class="hero-text">
-          nest-cloudflare-turnstile checks Cloudflare Turnstile tokens in a
-          NestJS guard. Add one decorator and requests without a valid token
-          never reach your code.
+          nest-cloudflare-turnstile checks Cloudflare Turnstile captcha tokens
+          in a NestJS guard. Add one decorator and requests without a valid
+          token never reach your code.
         </p>
 
         <div class="hero-actions">
