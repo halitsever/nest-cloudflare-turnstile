@@ -25,6 +25,8 @@ const jsonLd = {
 export default defineConfig({
   lang: 'en-US',
   title: 'Cloudflare Turnstile for NestJS',
+  /** the full site name pushed page titles past 60 characters */
+  titleTemplate: ':title | NestJS Turnstile',
   description,
   base,
 
