@@ -24,7 +24,7 @@ CI (`.github/workflows/ci.yml`) runs these, in this order:
 
 ## Docs site
 
-- VitePress source lives in `docs/`, with the config in `docs/.vitepress/config.mts` and base `/nest-cloudflare-turnstile/`. It is served at https://halitsever.github.io/nest-cloudflare-turnstile/ with `.html` page URLs (cleanUrls is off).
+- VitePress source lives in `docs/`, with the config in `docs/.vitepress/config.mts` and base `/nest-cloudflare-turnstile/`. It is served at https://projects.halit.org/nest-cloudflare-turnstile/ with `.html` page URLs (cleanUrls is off).
 - `.github/workflows/docs.yaml` deploys on pushes to `main` that touch `docs/**`. The build output and cache under `docs/.vitepress/` are ignored.
 - A new page needs a `description` line in its frontmatter, a sidebar entry in the config and a line in `docs/public/llms.txt`. The sitemap, canonical and `og:url` tags are generated.
 

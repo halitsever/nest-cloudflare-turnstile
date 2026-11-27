@@ -21,7 +21,7 @@
     "express",
     "fastify"
   ],
-  "homepage": "https://halitsever.github.io/nest-cloudflare-turnstile",
+  "homepage": "https://projects.halit.org/nest-cloudflare-turnstile",
   "bugs": {
     "url": "https://github.com/halitsever/nest-cloudflare-turnstile/issues"
   },
