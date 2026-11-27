@@ -3,7 +3,7 @@ import pkg from '../../package.json' with { type: 'json' };
 import { codeThemeDark, codeThemeLight } from './code-theme';
 
 const base = '/nest-cloudflare-turnstile/';
-const siteUrl = 'https://halitsever.github.io/nest-cloudflare-turnstile/';
+const siteUrl = 'https://projects.halit.org/nest-cloudflare-turnstile/';
 const repo = 'https://github.com/halitsever/nest-cloudflare-turnstile';
 const description =
   'A NestJS guard that verifies Cloudflare Turnstile captcha tokens before your handlers run, on Express, Fastify, GraphQL and WebSockets. Includes a guide for moving from reCAPTCHA.';
@@ -35,7 +35,7 @@ export default defineConfig({
   sitemap: { hostname: siteUrl },
 
   head: [
-    /** Cloudflare Web Analytics, one token for every page on halitsever.github.io. */
+    /** Cloudflare Web Analytics, one token for every page on projects.halit.org. */
     [
       'script',
       {

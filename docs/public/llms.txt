@@ -6,15 +6,15 @@ Install with `npm install nest-cloudflare-turnstile` (Node.js 20 or later). Regi
 
 ## Docs
 
-- [Home](https://halitsever.github.io/nest-cloudflare-turnstile/): overview and a quick example
-- [Get started](https://halitsever.github.io/nest-cloudflare-turnstile/get-started.html): install, register the module, protect a route and send the token from the browser
-- [Frontend frameworks](https://halitsever.github.io/nest-cloudflare-turnstile/frontend.html): sending the token from React, Next.js, Vue and Angular
-- [Options](https://halitsever.github.io/nest-cloudflare-turnstile/turnstile-options.html): every module option with its type and default
-- [Error handling](https://halitsever.github.io/nest-cloudflare-turnstile/error-handling.html): responses for missing or invalid tokens, custom exceptions and onError
-- [Testing](https://halitsever.github.io/nest-cloudflare-turnstile/testing.html): skipIf, stubbing the service and Cloudflare's test keys
-- [Advanced usage](https://halitsever.github.io/nest-cloudflare-turnstile/advanced.html): per-route actions, a global guard, several widgets, GraphQL, WebSockets, Fastify and proxies
-- [Upgrading from 0.0.x](https://halitsever.github.io/nest-cloudflare-turnstile/migration.html): requirements and behavior changes in 1.0
-- [Migrating from reCAPTCHA](https://halitsever.github.io/nest-cloudflare-turnstile/from-google-recaptcha.html): option, decorator and error code mapping from @nestlab/google-recaptcha
+- [Home](https://projects.halit.org/nest-cloudflare-turnstile/): overview and a quick example
+- [Get started](https://projects.halit.org/nest-cloudflare-turnstile/get-started.html): install, register the module, protect a route and send the token from the browser
+- [Frontend frameworks](https://projects.halit.org/nest-cloudflare-turnstile/frontend.html): sending the token from React, Next.js, Vue and Angular
+- [Options](https://projects.halit.org/nest-cloudflare-turnstile/turnstile-options.html): every module option with its type and default
+- [Error handling](https://projects.halit.org/nest-cloudflare-turnstile/error-handling.html): responses for missing or invalid tokens, custom exceptions and onError
+- [Testing](https://projects.halit.org/nest-cloudflare-turnstile/testing.html): skipIf, stubbing the service and Cloudflare's test keys
+- [Advanced usage](https://projects.halit.org/nest-cloudflare-turnstile/advanced.html): per-route actions, a global guard, several widgets, GraphQL, WebSockets, Fastify and proxies
+- [Upgrading from 0.0.x](https://projects.halit.org/nest-cloudflare-turnstile/migration.html): requirements and behavior changes in 1.0
+- [Migrating from reCAPTCHA](https://projects.halit.org/nest-cloudflare-turnstile/from-google-recaptcha.html): option, decorator and error code mapping from @nestlab/google-recaptcha
 
 ## Optional
 
