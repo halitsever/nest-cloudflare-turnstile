@@ -3,6 +3,7 @@ import { withBase, type Theme } from 'vitepress';
 import { h } from 'vue';
 import HomePage from './components/HomePage.vue';
 import NotFound from './components/NotFound.vue';
+import TurnstileDemo from './components/TurnstileDemo.vue';
 import './style.css';
 
 export default {
@@ -24,5 +25,6 @@ export default {
     }),
   enhanceApp({ app }) {
     app.component('HomePage', HomePage);
+    app.component('TurnstileDemo', TurnstileDemo);
   },
 } satisfies Theme;
