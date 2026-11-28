@@ -171,6 +171,13 @@ const stack = [
     ],
   },
   {
+    title: 'Resources',
+    links: [
+      ['Live demo', '/demo/'],
+      ['Blog', '/blog/'],
+    ],
+  },
+  {
     title: 'Project',
     items: [
       {
@@ -391,7 +398,9 @@ const href = (link: string) => (link.startsWith('http') ? link : page(link));
           <h2>Add Turnstile to Your NestJS App</h2>
           <p>
             Free and open source under the MIT License. The guide goes from
-            install to your first protected route.
+            install to your first protected route, and the
+            <a :href="page('/demo/')">live demo</a> shows the widget with
+            Cloudflare's test keys.
           </p>
           <div class="cta-actions">
             <a class="btn btn-white" :href="page('/get-started.html')"
@@ -998,6 +1007,12 @@ h3 {
   color: rgba(255, 255, 255, 0.92);
 }
 
+.cta p a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .cta-actions {
   display: flex;
   justify-content: center;
@@ -1049,7 +1064,7 @@ h3 {
 
 .foot-cols {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
 

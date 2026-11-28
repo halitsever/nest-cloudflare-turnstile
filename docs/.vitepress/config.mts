@@ -21,6 +21,68 @@ const jsonLd = {
   author: { '@type': 'Person', name: 'Halit Sever', url: 'https://halit.org' },
 };
 
+const author = {
+  '@type': 'Person',
+  name: 'Halit Sever',
+  url: 'https://halit.org',
+};
+
+type Faq = { q: string; a: string };
+
+/** FAQPage data, only for pages that show the same questions on the page. */
+function faqJsonLd(faq: Faq[]) {
+  return {
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.a.replace(/<[^>]+>|`/g, ''),
+      },
+    })),
+  };
+}
+
+/** BlogPosting and breadcrumbs for a blog post. */
+function postJsonLd(fm: Record<string, any>, url: string) {
+  const headline = fm.headline ?? fm.title;
+  return [
+    {
+      '@type': 'BlogPosting',
+      headline,
+      description: fm.description,
+      url,
+      mainEntityOfPage: url,
+      datePublished: fm.date,
+      dateModified: fm.date,
+      inLanguage: 'en',
+      image: `${siteUrl}og.png`,
+      keywords: fm.keyword,
+      author,
+      publisher: author,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'NestJS Turnstile',
+          item: siteUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Blog',
+          item: `${siteUrl}blog/`,
+        },
+        { '@type': 'ListItem', position: 3, name: headline, item: url },
+      ],
+    },
+  ];
+}
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   /** keeps the page hash map out of every page's HTML, which Semrush reads as a low text-to-HTML ratio */
@@ -58,9 +120,6 @@ export default defineConfig({
         href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Inter+Tight:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap',
       },
     ],
-    ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'nest-cloudflare-turnstile' }],
-    ['meta', { property: 'og:description', content: description }],
     ['meta', { property: 'og:image', content: `${siteUrl}og.png` }],
     ['meta', { property: 'og:image:width', content: '1200' }],
     ['meta', { property: 'og:image:height', content: '630' }],
@@ -74,11 +133,36 @@ export default defineConfig({
       .replace(/(^|\/)index\.md$/, '$1')
       .replace(/\.md$/, '.html');
     const url = `${siteUrl}${path}`;
-    pageData.frontmatter.head ??= [];
-    pageData.frontmatter.head.push(
+    const fm = pageData.frontmatter;
+    const title =
+      fm.titleTemplate === false
+        ? fm.title
+        : `${pageData.title} | NestJS Turnstile`;
+    fm.head ??= [];
+    fm.head.push(
       ['link', { rel: 'canonical', href: url }],
       ['meta', { property: 'og:url', content: url }],
+      [
+        'meta',
+        { property: 'og:type', content: fm.date ? 'article' : 'website' },
+      ],
+      ['meta', { property: 'og:title', content: title }],
+      [
+        'meta',
+        { property: 'og:description', content: fm.description ?? description },
+      ],
     );
+    const graph = [
+      ...(fm.date ? postJsonLd(fm, url) : []),
+      ...(fm.faq?.length ? [faqJsonLd(fm.faq)] : []),
+    ];
+    if (graph.length) {
+      fm.head.push([
+        'script',
+        { type: 'application/ld+json' },
+        JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }),
+      ]);
+    }
   },
 
   markdown: {
@@ -96,35 +180,90 @@ export default defineConfig({
       {
         text: 'Guide',
         link: '/get-started',
-        activeMatch: '^/(?!turnstile-options)[a-z]',
+        activeMatch: '^/(?!turnstile-options|demo|blog)[a-z]',
       },
       { text: 'Options', link: '/turnstile-options' },
+      { text: 'Demo', link: '/demo/' },
+      { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
       { text: 'Changelog', link: `${repo}/blob/main/CHANGELOG.md` },
     ],
 
-    sidebar: [
-      {
-        text: 'Guide',
-        items: [
-          { text: 'Get started', link: '/get-started' },
-          { text: 'Frontend frameworks', link: '/frontend' },
-          { text: 'Options', link: '/turnstile-options' },
-          { text: 'Error handling', link: '/error-handling' },
-          { text: 'Testing', link: '/testing' },
-          { text: 'Advanced usage', link: '/advanced' },
-        ],
-      },
-      {
-        text: 'Migrating',
-        items: [
-          { text: 'From 0.0.x to 1.0', link: '/migration' },
-          {
-            text: 'From reCAPTCHA',
-            link: '/from-google-recaptcha',
-          },
-        ],
-      },
-    ],
+    sidebar: {
+      '/blog/': [
+        {
+          text: 'Blog',
+          items: [
+            { text: 'All posts', link: '/blog/' },
+            {
+              text: 'hCaptcha vs reCAPTCHA vs Turnstile',
+              link: '/blog/hcaptcha-vs-recaptcha-vs-turnstile',
+            },
+            {
+              text: 'reCAPTCHA alternatives',
+              link: '/blog/recaptcha-alternatives',
+            },
+            {
+              text: 'What is Cloudflare Turnstile?',
+              link: '/blog/what-is-cloudflare-turnstile',
+            },
+            {
+              text: 'Turnstile error codes',
+              link: '/blog/turnstile-error-codes',
+            },
+            {
+              text: 'Turnstile vs reCAPTCHA',
+              link: '/blog/cloudflare-turnstile-vs-recaptcha',
+            },
+            { text: 'Widget options', link: '/blog/turnstile-widget-options' },
+            {
+              text: 'Testing with test keys',
+              link: '/blog/turnstile-test-keys',
+            },
+            {
+              text: 'Verify captchas on the server',
+              link: '/blog/verify-captcha-server-side',
+            },
+          ],
+        },
+        {
+          text: 'Docs',
+          items: [
+            { text: 'Get started', link: '/get-started' },
+            { text: 'Live demo', link: '/demo/' },
+          ],
+        },
+      ],
+      '/': [
+        {
+          text: 'Guide',
+          items: [
+            { text: 'Get started', link: '/get-started' },
+            { text: 'Frontend frameworks', link: '/frontend' },
+            { text: 'Options', link: '/turnstile-options' },
+            { text: 'Error handling', link: '/error-handling' },
+            { text: 'Testing', link: '/testing' },
+            { text: 'Advanced usage', link: '/advanced' },
+          ],
+        },
+        {
+          text: 'Migrating',
+          items: [
+            { text: 'From 0.0.x to 1.0', link: '/migration' },
+            {
+              text: 'From reCAPTCHA',
+              link: '/from-google-recaptcha',
+            },
+          ],
+        },
+        {
+          text: 'More',
+          items: [
+            { text: 'Live demo', link: '/demo/' },
+            { text: 'Blog', link: '/blog/' },
+          ],
+        },
+      ],
+    },
 
     search: { provider: 'local' },
 

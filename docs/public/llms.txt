@@ -15,6 +15,19 @@ Install with `npm install nest-cloudflare-turnstile` (Node.js 20 or later). Regi
 - [Advanced usage](https://projects.halit.org/nest-cloudflare-turnstile/advanced.html): per-route actions, a global guard, several widgets, GraphQL, WebSockets, Fastify and proxies
 - [Upgrading from 0.0.x](https://projects.halit.org/nest-cloudflare-turnstile/migration.html): requirements and behavior changes in 1.0
 - [Migrating from reCAPTCHA](https://projects.halit.org/nest-cloudflare-turnstile/from-google-recaptcha.html): option, decorator and error code mapping from @nestlab/google-recaptcha
+- [Live demo](https://projects.halit.org/nest-cloudflare-turnstile/demo/): the Turnstile widget with Cloudflare's test site keys, the token it returns and the guard code that verifies it
+
+## Blog
+
+- [Blog](https://projects.halit.org/nest-cloudflare-turnstile/blog/): guides to Turnstile, captcha providers and server-side verification
+- [hCaptcha, reCAPTCHA and Turnstile compared](https://projects.halit.org/nest-cloudflare-turnstile/blog/hcaptcha-vs-recaptcha-vs-turnstile.html): hCaptcha vs reCAPTCHA vs Cloudflare Turnstile: how each widget works, token lifetime, siteverify requests, free tiers and what changes on your server.
+- [reCAPTCHA alternatives worth a look](https://projects.halit.org/nest-cloudflare-turnstile/blog/recaptcha-alternatives.html): reCAPTCHA alternatives compared: Cloudflare Turnstile, hCaptcha, ALTCHA and Friendly Captcha, how each one verifies visitors, and their free plans.
+- [How Cloudflare Turnstile tells people from bots](https://projects.halit.org/nest-cloudflare-turnstile/blog/what-is-cloudflare-turnstile.html): What Cloudflare Turnstile is, how its widget turns a background challenge into a token, and how your server verifies that token with the siteverify API.
+- [Turnstile error codes, from 600010 to timeout-or-duplicate](https://projects.halit.org/nest-cloudflare-turnstile/blog/turnstile-error-codes.html): What Cloudflare Turnstile error 600010 means, the other client-side codes such as 110200 and 300 errors, siteverify error codes and the fixes Cloudflare lists.
+- [Turnstile or reCAPTCHA: what differs for your app](https://projects.halit.org/nest-cloudflare-turnstile/blog/cloudflare-turnstile-vs-recaptcha.html): Cloudflare Turnstile vs Google reCAPTCHA: challenges, scores, token lifetime, free tiers and what the switch changes in your backend code and your tests.
+- [Setting up the Turnstile widget in the page](https://projects.halit.org/nest-cloudflare-turnstile/blog/turnstile-widget-options.html): Every Cloudflare Turnstile widget option: size, theme, appearance, execution, language, retry, action and cdata, with data attributes and render() names.
+- [A Turnstile tutorial with Cloudflare's test keys](https://projects.halit.org/nest-cloudflare-turnstile/blog/turnstile-test-keys.html): Use Cloudflare Turnstile test keys to build and test a form locally: site keys that pass, fail or force a challenge, test secrets and the NestJS test stub.
+- [Captcha checks belong on the server](https://projects.halit.org/nest-cloudflare-turnstile/blog/verify-captcha-server-side.html): Why a captcha widget alone protects nothing, what a server-side check must verify, and how a NestJS guard verifies Turnstile tokens on every request.
 
 ## Optional
 

@@ -566,3 +566,17 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Blog */
+
+.vp-doc .post-meta {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc .lead {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--vp-c-text-2);
+}
