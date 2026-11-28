@@ -1,7 +1,7 @@
 ---
 title: 'Turnstile and Captcha Guides for NestJS Developers'
 titleTemplate: false
-description: 'Guides to Cloudflare Turnstile and captcha providers: how tokens are verified, error codes, widget options, test keys and how Turnstile compares to reCAPTCHA.'
+description: 'Guides to Cloudflare Turnstile and its bot checks: token verification, error codes, challenge pages, bot scores, pricing and how it compares to reCAPTCHA.'
 ---
 
 # Captcha and Turnstile guides
@@ -39,3 +39,27 @@ Use Cloudflare Turnstile test keys to build and test a form locally: site keys t
 ## [Captcha checks belong on the server](/blog/verify-captcha-server-side)
 
 Why a captcha widget alone protects nothing, what a server-side check must verify, and how a NestJS guard verifies Turnstile tokens on every request.
+
+## [Why a site asks you to unblock challenges.cloudflare.com, and how to fix it](/blog/unblock-challenges-cloudflare-com)
+
+Why a site says please unblock challenges.cloudflare.com to proceed: what the domain does, what blocks it, how to check it, and the fix for site owners.
+
+## [What happens while Cloudflare is verifying you are human](/blog/verifying-you-are-human)
+
+What Cloudflare does while a page says verifying you are human, why it may think you are a bot, what causes a verification loop and what site owners can change.
+
+## [The \_\_cf_bm cookie: what Cloudflare stores and for how long](/blog/cf-bm-cookie)
+
+The __cf_bm cookie comes from Cloudflare Bot Management and Bot Fight Mode: what it holds, why it expires after 30 minutes, and whether it tracks you.
+
+## [How much Cloudflare Turnstile costs, and what Enterprise adds](/blog/cloudflare-turnstile-pricing)
+
+Cloudflare Turnstile pricing: the free plan has no cap on challenges, 20 widgets and 10 hostnames per widget. What Enterprise adds and which limits matter.
+
+## [Bot Fight Mode, Super Bot Fight Mode and Turnstile compared](/blog/cloudflare-bot-fight-mode)
+
+What Cloudflare Bot Fight Mode does, why it can block your own API and webhooks, how Super Bot Fight Mode differs, and when Turnstile on a form fits better.
+
+## [How Cloudflare scores requests from bot to human](/blog/cloudflare-bot-score)
+
+How Cloudflare Bot Management scores each request from 1 (bot) to 99 (human), the score groups, the engines behind it, a WAF rule using it and Turnstile's role.

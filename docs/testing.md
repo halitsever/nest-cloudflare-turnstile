@@ -1,8 +1,9 @@
 ---
+title: 'Testing'
 description: "Test NestJS apps that use Cloudflare Turnstile: skip the guard, stub the service and use Cloudflare's test keys."
 ---
 
-# Testing
+# Testing guarded routes without calling Cloudflare
 
 ## Turn the guard off
 

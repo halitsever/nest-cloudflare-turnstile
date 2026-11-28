@@ -223,6 +223,24 @@ export default defineConfig({
               text: 'Verify captchas on the server',
               link: '/blog/verify-captcha-server-side',
             },
+            {
+              text: 'Unblock challenges.cloudflare.com',
+              link: '/blog/unblock-challenges-cloudflare-com',
+            },
+            {
+              text: 'Verifying you are human',
+              link: '/blog/verifying-you-are-human',
+            },
+            { text: 'The __cf_bm cookie', link: '/blog/cf-bm-cookie' },
+            {
+              text: 'Turnstile pricing',
+              link: '/blog/cloudflare-turnstile-pricing',
+            },
+            { text: 'Bot Fight Mode', link: '/blog/cloudflare-bot-fight-mode' },
+            {
+              text: 'Cloudflare bot score',
+              link: '/blog/cloudflare-bot-score',
+            },
           ],
         },
         {

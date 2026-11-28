@@ -1,8 +1,9 @@
 ---
+title: 'Get started'
 description: 'Install nest-cloudflare-turnstile, register TurnstileModule and protect a NestJS route with a Cloudflare Turnstile captcha check.'
 ---
 
-# Get started
+# Protect your first NestJS route with Turnstile
 
 ## Install
 

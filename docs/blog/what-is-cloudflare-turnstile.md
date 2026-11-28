@@ -32,7 +32,7 @@ faq:
 
 Cloudflare calls Turnstile its "smart CAPTCHA alternative". The widget runs non-interactive JavaScript challenges that gather signals about the browser and its environment: proof-of-work, proof-of-space, probing of web APIs, and checks for browser quirks and human behaviour. Cloudflare tunes the difficulty per request so that visitors do not get a visual puzzle ([Turnstile overview](https://developers.cloudflare.com/turnstile/)).
 
-Turnstile is separate from Cloudflare's CDN. Any website can embed the widget, whether or not its traffic runs through Cloudflare. The free plan allows up to 20 widgets with no cap on challenges ([plans](https://developers.cloudflare.com/turnstile/plans/)).
+Turnstile is separate from Cloudflare's CDN. Any website can embed the widget, whether or not its traffic runs through Cloudflare. The free plan allows up to 20 widgets with no cap on challenges ([plans](https://developers.cloudflare.com/turnstile/plans/); [Turnstile pricing](/blog/cloudflare-turnstile-pricing) compares it with Enterprise). The full-page "verifying you are human" screens are a different product on the same platform, explained in [Cloudflare's challenge pages](/blog/verifying-you-are-human).
 
 ## The three widget modes
 

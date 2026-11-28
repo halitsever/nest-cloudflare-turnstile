@@ -1,8 +1,9 @@
 ---
+title: 'Error handling'
 description: 'How the NestJS Turnstile guard handles missing or invalid captcha tokens, custom exceptions and Cloudflare network errors.'
 ---
 
-# Error handling
+# What happens when a Turnstile check fails
 
 The guard sorts failures into two groups. Problems with the visitor's token become 400 responses by default. Problems with your setup or with Cloudflare become 500 responses and reach `onError`.
 
