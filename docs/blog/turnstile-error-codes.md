@@ -69,6 +69,8 @@ If it still fails, Cloudflare asks for the error code and Ray ID, a HAR file and
 
 A `401` response on a Private Access Token request is expected when the device does not support those tokens, and can be ignored if the widget still returns a token.
 
+When an ad blocker, a DNS filter or a Content Security Policy blocks `challenges.cloudflare.com`, the error depends on what fails: see [please unblock challenges.cloudflare.com](/blog/unblock-challenges-cloudflare-com) for a test with each case.
+
 Codes that start with 110 or 400 are your setup, not the visitor. `110200` is the common one during development: production site keys do not allow `localhost` unless you add it. Cloudflare's [test keys](/blog/turnstile-test-keys) work on any domain, including `localhost`.
 
 ## "Cloudflare Turnstile loop"

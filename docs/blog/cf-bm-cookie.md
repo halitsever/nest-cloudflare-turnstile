@@ -1,0 +1,106 @@
+---
+title: 'What Is the __cf_bm Cookie? Cloudflare Bot Cookie'
+titleTemplate: false
+description: 'The __cf_bm cookie comes from Cloudflare Bot Management and Bot Fight Mode: what it holds, why it expires after 30 minutes, and whether it tracks you.'
+headline: 'The __cf_bm cookie: what Cloudflare stores and for how long'
+date: '2026-11-28'
+keyword: '__cf_bm'
+faq:
+  [
+    {
+      'q': 'What is the __cf_bm cookie?',
+      'a': "It is a Cloudflare cookie for its bot products. Sites that use Bot Management or Bot Fight Mode get it set on visitors' browsers so Cloudflare can compute a reliable bot score across a visitor's requests.",
+    },
+    {
+      'q': 'Does __cf_bm need consent under cookie rules?',
+      'a': "Cloudflare's cookie page says all its listed cookies are strictly necessary for the services customers request, and encourages customers to disclose them. Whether your banner must list it depends on your jurisdiction, so check with whoever handles your privacy policy.",
+    },
+    {
+      'q': 'How long does the __cf_bm cookie last?',
+      'a': 'It expires after 30 minutes of continuous inactivity. A response seen on 28 November 2026 set it with an Expires time 30 minutes ahead.',
+    },
+  ]
+---
+
+# The \_\_cf_bm cookie: what Cloudflare stores and for how long
+
+<p class="post-meta">By <a href="https://halit.org">Halit Sever</a> · <time datetime="2026-11-28">28 November 2026</time></p>
+
+<p class="lead">If a cookie scanner or your browser's storage panel shows a cookie called <code>__cf_bm</code>, the site sits behind Cloudflare and uses one of its bot products. The cookie is short-lived, encrypted and set separately for every site. Here is what Cloudflare documents about it, and what a real response looks like.</p>
+
+## Who sets it
+
+Cloudflare's [cookie reference](https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/) says `__cf_bm` is placed on visitors' devices for sites protected by **Bot Management** or **Bot Fight Mode**, and that those products need it to work. Bot Management is an Enterprise add-on; Bot Fight Mode is Cloudflare's free bot product ([Bot Fight Mode compared](/blog/cloudflare-bot-fight-mode)).
+
+A site using Turnstile alone does not need it. Turnstile is a widget on a page, and it works on sites that do not run through Cloudflare's network at all.
+
+## What a real one looks like
+
+A `curl` request to `https://www.cloudflare.com/` with a browser User-Agent on 28 November 2026 returned this header (value removed):
+
+```text
+set-cookie: __cf_bm=<value>; HttpOnly; SameSite=None; Partitioned; Secure; Path=/; Domain=www.cloudflare.com; Expires=Sat, 28 Nov 2026 06:51:53 GMT
+```
+
+The request was made at 06:21 UTC, so the cookie was set to live 30 minutes. Other sites tested the same minute (openai.com, coinbase.com, npmjs.com) sent the same attributes for their own domains.
+
+| Attribute                    | Why                                                                                                                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HttpOnly`                   | Page scripts cannot read it.                                                                                                                                      |
+| `Secure`                     | Only sent over HTTPS.                                                                                                                                             |
+| `SameSite=None; Partitioned` | It works when the site is embedded in another site, but the browser keeps a separate copy per top-level site (CHIPS), so it is not shared across unrelated sites. |
+| `Expires` 30 minutes ahead   | Cloudflare says it expires after 30 minutes of continuous inactivity.                                                                                             |
+
+## What it contains
+
+Per Cloudflare's docs, the cookie holds information used to calculate Cloudflare's proprietary bot score and, when Anomaly Detection is enabled, a session identifier. Everything except time-related information is encrypted, and only Cloudflare can decrypt it.
+
+The [bot score docs](https://developers.cloudflare.com/bots/concepts/bot-score/) explain the purpose: Cloudflare uses the cookie to smooth out the bot score for real user sessions and reduce false positives. One request in isolation can look odd; a pattern of requests from the same browser is a better signal. [How Cloudflare scores requests](/blog/cloudflare-bot-score) covers the score itself.
+
+## Does it track you?
+
+Cloudflare's answer, from the same page:
+
+- A separate `__cf_bm` is generated for each site you visit. Cloudflare does not track users from site to site or from session to session with it.
+- It is generated by Cloudflare independently and does not correspond to any user ID in the site's own application.
+- The partitioned attribute keeps embedded copies apart per top-level site.
+
+Like the other cookies on that page, Cloudflare classes it as strictly necessary for the service the site requested, and it encourages sites to disclose its cookies to visitors. Some jurisdictions require that disclosure.
+
+## Can a site turn it off?
+
+Yes. Cloudflare documents a `bm_cookie_enabled` field in the Bot Management API to disable the cookie. Without it, bot scores lose the session signal that the cookie provides.
+
+## Related cookies you may see
+
+| Cookie         | Set by                                   | Purpose                                                                                               |
+| -------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `cf_clearance` | Challenge pages, Turnstile pre-clearance | Proof that the visitor passed a challenge ([verifying you are human](/blog/verifying-you-are-human)). |
+| `__cfseq`      | Bot Management sequence rules            | Order and timing of requests.                                                                         |
+| `_cfuvid`      | Rate limiting rules                      | Telling apart visitors behind one IP address.                                                         |
+| `__cflb`       | Load Balancer session affinity           | Sending a visitor back to the same origin.                                                            |
+
+## For an API behind Cloudflare
+
+`__cf_bm` is set on responses, so a browser sends it back automatically. An API client that does not keep cookies just gets a new one each time. If your NestJS API checks Turnstile tokens with this site's guard, the guard does not read any Cloudflare cookie: it verifies the token in the request with Cloudflare's siteverify API ([server-side verification](/blog/verify-captcha-server-side)).
+
+## FAQ
+
+### What is the \_\_cf_bm cookie?
+
+It is a Cloudflare cookie for its bot products. Sites that use Bot Management or Bot Fight Mode get it set on visitors' browsers so Cloudflare can compute a reliable bot score across a visitor's requests.
+
+### Does \_\_cf_bm need consent under cookie rules?
+
+Cloudflare's cookie page says all its listed cookies are strictly necessary for the services customers request, and encourages customers to disclose them. Whether your banner must list it depends on your jurisdiction, so check with whoever handles your privacy policy.
+
+### How long does the \_\_cf_bm cookie last?
+
+It expires after 30 minutes of continuous inactivity. A response seen on 28 November 2026 set it with an Expires time 30 minutes ahead.
+
+## Related posts
+
+- [How Cloudflare scores requests from bot to human](/blog/cloudflare-bot-score)
+- [Bot Fight Mode, Super Bot Fight Mode and Turnstile compared](/blog/cloudflare-bot-fight-mode)
+- [What happens while Cloudflare is verifying you are human](/blog/verifying-you-are-human)
+- [All posts](/blog/)

@@ -40,6 +40,8 @@ faq:
 | Free tier            | Essentials: up to 10,000 assessments a month per organization | Up to 20 widgets, no cap on challenges                                               |
 | Test keys            | Published by Google                                           | Five site keys and three secret keys                                                 |
 
+Turnstile's free plan limits are broken down in [Turnstile pricing](/blog/cloudflare-turnstile-pricing).
+
 Sources, as of November 2026: [reCAPTCHA v3](https://developers.google.com/recaptcha/docs/v3), [reCAPTCHA verify](https://developers.google.com/recaptcha/docs/verify), [reCAPTCHA tiers](https://docs.cloud.google.com/recaptcha/docs/compare-tiers), [Turnstile validation](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/), [Turnstile plans](https://developers.cloudflare.com/turnstile/plans/).
 
 ## The score is the real difference
